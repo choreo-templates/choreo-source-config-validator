@@ -2,6 +2,7 @@ const core = require("@actions/core");
 const github = require("@actions/github");
 const fs = require("fs");
 const yaml = require("js-yaml");
+const yup = require("yup");
 
 // constants
 const ALLOWED_COMPONENT_YAML_VERSIONS = ["0.9", "1.0", "1.1"];
@@ -15,7 +16,7 @@ function readComponentYaml(filePath) {
     let fileContent = fs.readFileSync(fullPath, "utf8");
     return fileContent;
   } catch (error) {
-    console.log("Failed to read component.yaml", error.message);
+    console.log("No component.yaml found, hence skipping the validation", error.message);
     core.setOutput(
       "No component.yaml found",
       "No component.yaml found, hence skipping the validation"
@@ -121,9 +122,11 @@ try {
         core.setOutput("Component.yaml validation", "Successful");
       })
       .catch((err) => {
-        core.setFailed("Component.yaml validation failed", err.errors);
+        console.log("Component.yaml validation failed", err.errors);
+        core.setFailed("Component.yaml validation failed: ", err.errors);
       });
   }
 } catch (error) {
+  console.log("Failed to validate component.yaml", error.message);
   core.setFailed("Failed to validate component.yaml", error.message);
 }
