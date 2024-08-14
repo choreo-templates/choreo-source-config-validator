@@ -36060,12 +36060,25 @@ exports.tuple = create$1;
 
 const yup = __nccwpck_require__(2613);
 const github = __nccwpck_require__(8487);
+const fs = __nccwpck_require__(7147);
 
 // constants
 const ALLOWED_COMPONENT_YAML_VERSIONS = ["0.9", "1.0", "1.1"];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Private", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
+
+// utils
+function constructSchemaFilePath(srcDir, schemaFilePath) {
+  const srcDirHasTrailingSlash = srcDir.endsWith("/");
+  const schemaFilePathHasLeadingSlash = schemaFilePath.startsWith("/");
+  if (srcDirHasTrailingSlash && schemaFilePathHasLeadingSlash) {
+    return srcDir + schemaFilePath.substring(1);
+  } else if (!(srcDirHasTrailingSlash || schemaFilePathHasLeadingSlash)) {
+    return `${srcDir}/${schemaFilePath}`;
+  }
+  return srcDir + schemaFilePath;
+}
 
 // custom validators
 // checkEndpointNameUniqueness - Custom validation method to check if endpoint names are unique
@@ -36103,6 +36116,26 @@ yup.addMethod(yup.object, "basePathRequired", function () {
     },
   });
 });
+// SchemaFileExists - Custom validation method to check if the provided schema file exists
+yup.addMethod(yup.string, "schemaFileExists", function (srcDir) {
+  return this.test({
+    name: "schema-file-exists",
+    test: (value) => {
+      schemaFilePath = constructSchemaFilePath(srcDir, value);
+      try {
+        const hasFile = fs.existsSync(schemaFilePath);
+        return (
+          hasFile ||
+          new yup.ValidationError(
+            `Schema file does not exist at the given path ${value}`
+          )
+        );
+      } catch (error) {
+        console.log("Failed to check if schema file exists:", error.message);
+      }
+    },
+  });
+});
 
 // Schema definitions
 // serviceSchema - Schema for service definition
@@ -36119,37 +36152,45 @@ const serviceSchema = yup
   .required("service definition is required")
   .basePathRequired();
 // endpointSchema - Schema for endpoint definition
-const endpointSchema = yup
-  .array()
-  .of(
-    yup.object().shape({
-      name: yup
-        .string()
-        .required("Endpoint name is required")
-        .max(50, "Endpoint name must be less than 50 characters")
-        .matches(
-          /^[a-z0-9-]+$/,
-          "Endpoint name must only contain lowercase letters, digits, and hyphens"
-        ),
-      displayName: yup
-        .string()
-        .required()
-        .max(50, "Display name must be less than 50 characters"),
-      service: serviceSchema,
-      type: yup.string().required("Missing endpoint type").oneOf(ALLOWED_TYPES),
-      networkVisibilities: yup
-        .array()
-        .of(yup.string().oneOf(ALLOWED_NETWORK_VISIBILITIES)),
-      schemaFilePath: yup.string(),
-    })
-  )
-  .checkEndpointNameUniqueness();
+const endpointSchema = (srcDir) =>
+  yup
+    .array()
+    .of(
+      yup.object().shape({
+        name: yup
+          .string()
+          .required("Endpoint name is required")
+          .max(50, "Endpoint name must be less than 50 characters")
+          .matches(
+            /^[a-z0-9-]+$/,
+            "Endpoint name must only contain lowercase letters, digits, and hyphens"
+          ),
+        displayName: yup
+          .string()
+          .required()
+          .max(50, "Display name must be less than 50 characters"),
+        service: serviceSchema,
+        type: yup
+          .string()
+          .required("Missing endpoint type")
+          .oneOf(ALLOWED_TYPES),
+        networkVisibilities: yup
+          .array()
+          .of(yup.string().oneOf(ALLOWED_NETWORK_VISIBILITIES)),
+        schemaFilePath: yup.string().schemaFileExists(srcDir),
+      })
+    )
+    .checkEndpointNameUniqueness();
 
 // componentYamlSchema - Schema for component.yaml
-const componentYamlSchema = yup.object().shape({
-  schemaVersion: yup.string().required().oneOf(ALLOWED_COMPONENT_YAML_VERSIONS),
-  endpoints: endpointSchema,
-});
+const componentYamlSchema = (srcDir) =>
+  yup.object().shape({
+    schemaVersion: yup
+      .string()
+      .required()
+      .oneOf(ALLOWED_COMPONENT_YAML_VERSIONS),
+    endpoints: endpointSchema(srcDir),
+  });
 
 module.exports = {
   componentYamlSchema,
@@ -38086,7 +38127,7 @@ try {
   if (fileContent !== null) {
     // Parse the yaml content
     componentYamlFile = yaml.load(fileContent);
-    componentYamlSchema
+    componentYamlSchema(sourceRootDir)
       .validate(componentYamlFile)
       .then(() => {
         core.setOutput("Component.yaml validation", "Successful");

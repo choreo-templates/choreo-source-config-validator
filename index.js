@@ -36,7 +36,7 @@ try {
   if (fileContent !== null) {
     // Parse the yaml content
     componentYamlFile = yaml.load(fileContent);
-    componentYamlSchema
+    componentYamlSchema(sourceRootDir)
       .validate(componentYamlFile)
       .then(() => {
         core.setOutput("Component.yaml validation", "Successful");
