@@ -3,7 +3,6 @@ const fs = require("fs");
 const yaml = require("js-yaml");
 const { componentYamlSchema } = require("./schemas");
 
-// util functions
 function readComponentYaml(filePath) {
   try {
     fullPath = `${filePath}/.choreo/component.yaml`;
@@ -26,11 +25,12 @@ function readComponentYaml(filePath) {
 // Main code
 let sourceRootDir = "";
 try {
-  sourceRootDir = core.getInput("source-root-dir");
+  sourceRootDir = core.getInput("source-root-dir-path");
 } catch (error) {
   console.log("Failed to read input:", error.message);
   core.setFailed("Failed to read input", error.message);
 }
+
 try {
   fileContent = readComponentYaml(sourceRootDir);
   if (fileContent !== null) {

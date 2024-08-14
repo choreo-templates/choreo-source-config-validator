@@ -20,7 +20,7 @@ The result of the validation
 build:
   steps:
     - name: Choreo Source Configuration Validator
-      uses: choreo-templates/choreo-source-config-validator@v1
+      uses: choreo-templates/choreo-source-config-validator@v0.1.0
       with:
-        source-root-dir: ${{source-root-dir}}
+        source-root-dir-path: ${{source-root-dir-path}}
 ```

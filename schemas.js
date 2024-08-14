@@ -49,7 +49,7 @@ yup.addMethod(yup.object, "basePathRequired", function () {
       const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value.basePath) {
         return new yup.ValidationError(
-          "base path is required for REST, GraphQL, and WS endpoints"
+          "Base path is required for REST, GraphQL, and WS endpoints"
         );
       }
       return true;

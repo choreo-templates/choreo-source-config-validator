@@ -36109,7 +36109,7 @@ yup.addMethod(yup.object, "basePathRequired", function () {
       const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value.basePath) {
         return new yup.ValidationError(
-          "base path is required for REST, GraphQL, and WS endpoints"
+          "Base path is required for REST, GraphQL, and WS endpoints"
         );
       }
       return true;
@@ -38094,7 +38094,6 @@ const fs = __nccwpck_require__(7147);
 const yaml = __nccwpck_require__(3966);
 const { componentYamlSchema } = __nccwpck_require__(1677);
 
-// util functions
 function readComponentYaml(filePath) {
   try {
     fullPath = `${filePath}/.choreo/component.yaml`;
@@ -38117,11 +38116,12 @@ function readComponentYaml(filePath) {
 // Main code
 let sourceRootDir = "";
 try {
-  sourceRootDir = core.getInput("source-root-dir");
+  sourceRootDir = core.getInput("source-root-dir-path");
 } catch (error) {
   console.log("Failed to read input:", error.message);
   core.setFailed("Failed to read input", error.message);
 }
+
 try {
   fileContent = readComponentYaml(sourceRootDir);
   if (fileContent !== null) {

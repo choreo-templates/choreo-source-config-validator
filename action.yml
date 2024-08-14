@@ -1,7 +1,7 @@
 name: "Choreo Source Configuration Validator"
 description: "Validate the source configuration files of Choreo"
 inputs:
-  source-root-dir: # the path to root directory of the source code
+  source-root-dir-path: 
     description: "path to the root directory of the source code"
     required: true
     default: ""
