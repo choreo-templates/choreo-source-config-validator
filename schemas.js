@@ -36,7 +36,7 @@ yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
         return true;
       });
       return (
-        isUnique || new yup.ValidationError("Endpoint names must be unique")
+        isUnique || new yup.ValidationError("Endpoint names must be unique.")
       );
     },
   });
@@ -49,7 +49,7 @@ yup.addMethod(yup.object, "basePathRequired", function () {
       const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value.basePath) {
         return new yup.ValidationError(
-          "Base path is required for REST, GraphQL, and WS endpoints"
+          "Base path is required for REST, GraphQL, and WS endpoints."
         );
       }
       return true;
@@ -67,7 +67,7 @@ yup.addMethod(yup.string, "schemaFileExists", function (srcDir) {
         return (
           hasFile ||
           new yup.ValidationError(
-            `Schema file does not exist at the given path ${value}`
+            `Schema file does not exist at the given path ${value}.`
           )
         );
       } catch (error) {
@@ -85,11 +85,11 @@ const serviceSchema = yup
     basePath: yup.string().matches(/^\/[a-zA-Z0-9\/-]*$/, "Invalid base path"),
     port: yup
       .number()
-      .required("Missing port number")
-      .moreThan(1000, "Port number must be greater than 1000")
-      .lessThan(65535, "Port number must be less than 65535"),
+      .required("Missing port number.")
+      .moreThan(1000, "Port number must be greater than 1000.")
+      .lessThan(65535, "Port number must be less than 65535."),
   })
-  .required("service definition is required")
+  .required("service definition is required.")
   .basePathRequired();
 // endpointSchema - Schema for endpoint definition
 const endpointSchema = (srcDir) =>
@@ -99,20 +99,20 @@ const endpointSchema = (srcDir) =>
       yup.object().shape({
         name: yup
           .string()
-          .required("Endpoint name is required")
-          .max(50, "Endpoint name must be less than 50 characters")
+          .required("Endpoint name is required.")
+          .max(50, "Endpoint name must be less than 50 characters.")
           .matches(
             /^[a-z0-9-]+$/,
-            "Endpoint name must only contain lowercase letters, digits, and hyphens"
+            "Endpoint name must only contain lowercase letters, digits, and hyphens."
           ),
         displayName: yup
           .string()
           .required()
-          .max(50, "Display name must be less than 50 characters"),
+          .max(50, "Display name must be less than 50 characters."),
         service: serviceSchema,
         type: yup
           .string()
-          .required("Missing endpoint type")
+          .required("Missing endpoint type.")
           .oneOf(ALLOWED_TYPES),
         networkVisibilities: yup
           .array()

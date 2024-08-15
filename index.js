@@ -3,6 +3,14 @@ const fs = require("fs");
 const yaml = require("js-yaml");
 const { componentYamlSchema } = require("./schemas");
 
+// sanitizeSrcRootPath - remove trailing slash from the path
+function sanitizeSrcRootPath(path) {
+  if (path.endsWith("/")) {
+    return path.slice(0, -1);
+  }
+  return path;
+}
+
 function readComponentYaml(filePath) {
   try {
     fullPath = `${filePath}/.choreo/component.yaml`;
@@ -10,7 +18,7 @@ function readComponentYaml(filePath) {
     return fileContent;
   } catch (error) {
     console.log(
-      "No component.yaml found, hence skipping the validation:",
+      "No component.yaml found, hence skipping the validation: ",
       error.message
     );
     core.setOutput(
@@ -22,31 +30,42 @@ function readComponentYaml(filePath) {
   }
 }
 
+function constructValidationErrorMessage(errors) {
+  let errorMessage = "Failed to validate component.yaml";
+  if (errors.length == 0) {
+    return errorMessage;
+  }
+  const errorList =
+    errors.length === 1 ? errors[0] : errors.map((e) => `\n- ${e}`).join("");
+  return `${errorMessage}: ${errorList}`;
+}
+
 // Main code
 let sourceRootDir = "";
 try {
   sourceRootDir = core.getInput("source-root-dir-path");
 } catch (error) {
-  console.log("Failed to read input:", error.message);
+  console.log("Failed to read input: ", error.message);
   core.setFailed("Failed to read input", error.message);
 }
 
 try {
-  fileContent = readComponentYaml(sourceRootDir);
+  const sanitizedPath = sanitizeSrcRootPath(sourceRootDir);
+  fileContent = readComponentYaml(sanitizedPath);
   if (fileContent !== null) {
     // Parse the yaml content
     componentYamlFile = yaml.load(fileContent);
-    componentYamlSchema(sourceRootDir)
+    componentYamlSchema(sanitizedPath)
       .validate(componentYamlFile, { abortEarly: false })
       .then(() => {
         core.setOutput("Component.yaml validation", "Successful");
       })
       .catch((err) => {
-        console.log("Component.yaml validation failed:", err.errors);
+        console.log(constructValidationErrorMessage(err.errors));
         core.setFailed("Component.yaml validation failed", err.errors);
       });
   }
 } catch (error) {
-  console.log("Failed to validate component.yaml:", error.message);
+  console.log("Failed to validate component.yaml: ", error.message);
   core.setFailed("Failed to validate component.yaml", error.message);
 }

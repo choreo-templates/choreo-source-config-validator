@@ -36096,7 +36096,7 @@ yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
         return true;
       });
       return (
-        isUnique || new yup.ValidationError("Endpoint names must be unique")
+        isUnique || new yup.ValidationError("Endpoint names must be unique.")
       );
     },
   });
@@ -36109,7 +36109,7 @@ yup.addMethod(yup.object, "basePathRequired", function () {
       const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value.basePath) {
         return new yup.ValidationError(
-          "Base path is required for REST, GraphQL, and WS endpoints"
+          "Base path is required for REST, GraphQL, and WS endpoints."
         );
       }
       return true;
@@ -36127,7 +36127,7 @@ yup.addMethod(yup.string, "schemaFileExists", function (srcDir) {
         return (
           hasFile ||
           new yup.ValidationError(
-            `Schema file does not exist at the given path ${value}`
+            `Schema file does not exist at the given path ${value}.`
           )
         );
       } catch (error) {
@@ -36145,11 +36145,11 @@ const serviceSchema = yup
     basePath: yup.string().matches(/^\/[a-zA-Z0-9\/-]*$/, "Invalid base path"),
     port: yup
       .number()
-      .required("Missing port number")
-      .moreThan(1000, "Port number must be greater than 1000")
-      .lessThan(65535, "Port number must be less than 65535"),
+      .required("Missing port number.")
+      .moreThan(1000, "Port number must be greater than 1000.")
+      .lessThan(65535, "Port number must be less than 65535."),
   })
-  .required("service definition is required")
+  .required("service definition is required.")
   .basePathRequired();
 // endpointSchema - Schema for endpoint definition
 const endpointSchema = (srcDir) =>
@@ -36159,20 +36159,20 @@ const endpointSchema = (srcDir) =>
       yup.object().shape({
         name: yup
           .string()
-          .required("Endpoint name is required")
-          .max(50, "Endpoint name must be less than 50 characters")
+          .required("Endpoint name is required.")
+          .max(50, "Endpoint name must be less than 50 characters.")
           .matches(
             /^[a-z0-9-]+$/,
-            "Endpoint name must only contain lowercase letters, digits, and hyphens"
+            "Endpoint name must only contain lowercase letters, digits, and hyphens."
           ),
         displayName: yup
           .string()
           .required()
-          .max(50, "Display name must be less than 50 characters"),
+          .max(50, "Display name must be less than 50 characters."),
         service: serviceSchema,
         type: yup
           .string()
-          .required("Missing endpoint type")
+          .required("Missing endpoint type.")
           .oneOf(ALLOWED_TYPES),
         networkVisibilities: yup
           .array()
@@ -38094,6 +38094,14 @@ const fs = __nccwpck_require__(7147);
 const yaml = __nccwpck_require__(3966);
 const { componentYamlSchema } = __nccwpck_require__(1677);
 
+// sanitizeSrcRootPath - remove trailing slash from the path
+function sanitizeSrcRootPath(path) {
+  if (path.endsWith("/")) {
+    return path.slice(0, -1);
+  }
+  return path;
+}
+
 function readComponentYaml(filePath) {
   try {
     fullPath = `${filePath}/.choreo/component.yaml`;
@@ -38101,7 +38109,7 @@ function readComponentYaml(filePath) {
     return fileContent;
   } catch (error) {
     console.log(
-      "No component.yaml found, hence skipping the validation:",
+      "No component.yaml found, hence skipping the validation: ",
       error.message
     );
     core.setOutput(
@@ -38113,32 +38121,43 @@ function readComponentYaml(filePath) {
   }
 }
 
+function constructValidationErrorMessage(errors) {
+  let errorMessage = "Failed to validate component.yaml";
+  if (errors.length == 0) {
+    return errorMessage;
+  }
+  const errorList =
+    errors.length === 1 ? errors[0] : errors.map((e) => `\n- ${e}`).join("");
+  return `${errorMessage}: ${errorList}`;
+}
+
 // Main code
 let sourceRootDir = "";
 try {
   sourceRootDir = core.getInput("source-root-dir-path");
 } catch (error) {
-  console.log("Failed to read input:", error.message);
+  console.log("Failed to read input: ", error.message);
   core.setFailed("Failed to read input", error.message);
 }
 
 try {
-  fileContent = readComponentYaml(sourceRootDir);
+  const sanitizedPath = sanitizeSrcRootPath(sourceRootDir);
+  fileContent = readComponentYaml(sanitizedPath);
   if (fileContent !== null) {
     // Parse the yaml content
     componentYamlFile = yaml.load(fileContent);
-    componentYamlSchema(sourceRootDir)
+    componentYamlSchema(sanitizedPath)
       .validate(componentYamlFile, { abortEarly: false })
       .then(() => {
         core.setOutput("Component.yaml validation", "Successful");
       })
       .catch((err) => {
-        console.log("Component.yaml validation failed:", err.errors);
+        console.log(constructValidationErrorMessage(err.errors));
         core.setFailed("Component.yaml validation failed", err.errors);
       });
   }
 } catch (error) {
-  console.log("Failed to validate component.yaml:", error.message);
+  console.log("Failed to validate component.yaml: ", error.message);
   core.setFailed("Failed to validate component.yaml", error.message);
 }
 
