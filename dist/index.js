@@ -38128,7 +38128,7 @@ try {
     // Parse the yaml content
     componentYamlFile = yaml.load(fileContent);
     componentYamlSchema(sourceRootDir)
-      .validate(componentYamlFile)
+      .validate(componentYamlFile, { abortEarly: false })
       .then(() => {
         core.setOutput("Component.yaml validation", "Successful");
       })
