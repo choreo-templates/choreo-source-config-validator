@@ -23,14 +23,14 @@ function readComponentYaml(filePath) {
   }
 }
 
-function constructValidationErrorMessage(errors) {
-  let errorMessage = "Failed to validate component.yaml";
+function constructValidationErrorMessage(err) {
+  const errors = err.errors;
   if (errors.length == 0) {
-    return errorMessage;
+    return "Failed to validate component.yaml, something went wrong:" + err;
   }
   const errorList =
     errors.length === 1 ? errors[0] : errors.map((e) => `\n- ${e}`).join("");
-  return `${errorMessage}: ${errorList}`;
+  return errorList;
 }
 
 async function validateComponentYaml(sourceRootDir) {
@@ -40,7 +40,7 @@ async function validateComponentYaml(sourceRootDir) {
       abortEarly: false,
     });
   } catch (err) {
-    throw new Error(constructValidationErrorMessage(err.errors));
+    throw new Error(constructValidationErrorMessage(err));
   }
 }
 
