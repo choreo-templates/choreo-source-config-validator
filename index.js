@@ -53,7 +53,7 @@ async function main() {
     await validateComponentYaml(sourceRootDir);
   } catch (error) {
     console.log("component.yaml validation failed: ", error.message);
-    core.setFailed("component.yaml validation failed: ", error.message);
+    core.setFailed("component.yaml validation failed ", error.message);
   }
 }
 

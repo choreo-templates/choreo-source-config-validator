@@ -57,6 +57,10 @@ yup.addMethod(yup.string, "schemaFileExists", function (srcDir) {
   return this.test({
     name: "schema-file-exists",
     test: (value) => {
+      // schema file path is optional, hence return true if it is not present
+      if (!value) {
+        return true;
+      }
       schemaFilePath = path.join(srcDir, value);
       try {
         const hasFile = fs.existsSync(schemaFilePath);
