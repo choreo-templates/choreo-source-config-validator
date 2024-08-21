@@ -36168,9 +36168,9 @@ const endpointSchema = (srcDir) =>
           .required()
           .max(50)
           .matches(
-            /^[a-z][a-z0-9-]*$/,
+            /^[a-zA-Z][a-zA-Z0-9_-]*$/,
             ({ path }) =>
-              `'${path}' must start with a lowercase letter and can only contain lowercase letters, digits, and hyphens.`
+              `'${path}' must start with a letter and can contain letters, numbers, underscores (_), and hyphens (-).`
           ),
         displayName: yup.string().required().max(50),
         service: serviceSchema,
