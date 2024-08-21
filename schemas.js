@@ -6,7 +6,7 @@ const path = require("path");
 // constants
 const ALLOWED_COMPONENT_YAML_VERSIONS = ["0.9", "1.0", "1.1"];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
-const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Private", "Organization"];
+const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
 
 // custom validators
@@ -35,6 +35,7 @@ yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
   });
 });
 
+// check to remove this
 // basePathRequired - Custom validation method to check base path is required for REST, GraphQL, and WS endpoints
 yup.addMethod(yup.object, "basePathRequired", function () {
   return this.test({
