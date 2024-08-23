@@ -36172,7 +36172,7 @@ const endpointSchema = (srcDir) =>
             ({ path }) =>
               `'${path}' must start with a letter and can contain letters, numbers, underscores (_), and hyphens (-).`
           ),
-        displayName: yup.string().required().max(50),
+        displayName: yup.string().max(50),
         service: serviceSchema,
         type: yup.string().required().oneOf(ALLOWED_TYPES),
         networkVisibilities: yup
