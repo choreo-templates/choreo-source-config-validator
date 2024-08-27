@@ -81,6 +81,7 @@ yup.addMethod(yup.string, "schemaFileExists", function (srcDir) {
 });
 
 // Schema definitions
+// NOTE: specified schema versions are aligned with Rudder component schema versions
 // serviceSchema - Schema for service definition
 const serviceSchema = yup
   .object()
@@ -90,15 +91,15 @@ const serviceSchema = yup
       .matches(
         /^\/[a-zA-Z0-9\/-]*$/,
         ({ path }) =>
-          `'${path}' must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
+          `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
       ),
     port: yup.number().required().moreThan(1000).lessThan(65535),
   })
   .required()
   .basePathRequired();
 
-// endpointSchema - Schema for endpoint definition
-const endpointSchema = (srcDir) =>
+// endpointSchemaV0D2 - Schema for endpoint definition V0.2
+const endpointSchemaV0D2 = (srcDir) =>
   yup
     .array()
     .of(
@@ -108,9 +109,9 @@ const endpointSchema = (srcDir) =>
           .required()
           .max(50)
           .matches(
-            /^[a-zA-Z][a-zA-Z0-9_-]*$/,
+            /^[a-z][a-z0-9_-]*$/,
             ({ path }) =>
-              `'${path}' must start with a letter and can contain letters, numbers, underscores (_), and hyphens (-).`
+              `${path} must start with a lowercase letter and can contain lowercase letters, numbers, underscores (_), and hyphens (-).`
           ),
         displayName: yup.string().max(50),
         service: serviceSchema,
@@ -123,16 +124,51 @@ const endpointSchema = (srcDir) =>
     )
     .checkEndpointNameUniqueness();
 
+// serviceReferencesSchema - Schema for service references
+const alphanumericRegex = "[a-z0-9_-]+";
+const svcRefNameRegex = new RegExp(
+  `^choreo:\/\/\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/v\\d+(\\.\\d+)?\/(PUBLIC|PROJECT|ORGANIZATION)$`
+);
+const serviceReferencesSchema = yup.array().of(
+  yup.object().shape({
+    name: yup
+      .string()
+      .required()
+      .matches(
+        svcRefNameRegex,
+        ({ path }) =>
+          `${path} must follow the format ` +
+          `choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
+      ),
+    connectionConfig: yup.string().uuid().required(),
+    env: yup
+      .array()
+      .of(
+        yup.object().shape({
+          from: yup.string().required(),
+          to: yup.string().required(),
+        })
+      )
+      .required(),
+  })
+);
+
+// dependencySchemaV0D1 - Schema for dependency definition V0.1
+const dependencySchemaV0D1 = yup.object().shape({
+  serviceReferences: serviceReferencesSchema,
+});
+
 // componentYamlSchema - Schema for component.yaml
-const componentYamlSchema = (srcDir) =>
+const componentYamlSchemaV1D0 = (srcDir) =>
   yup.object().shape({
     schemaVersion: yup
       .string()
       .required()
       .oneOf(ALLOWED_COMPONENT_YAML_VERSIONS),
-    endpoints: endpointSchema(srcDir),
+    endpoints: endpointSchemaV0D2(srcDir),
+    dependencies: dependencySchemaV0D1,
   });
 
 module.exports = {
-  componentYamlSchema,
+  componentYamlSchemaV1D0,
 };

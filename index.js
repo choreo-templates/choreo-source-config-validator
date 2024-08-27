@@ -2,7 +2,7 @@ const core = require("@actions/core");
 const fs = require("fs");
 const yaml = require("js-yaml");
 const path = require("path");
-const { componentYamlSchema } = require("./schemas");
+const { componentYamlSchemaV1D0 } = require("./schemas");
 
 function readInput() {
   try {
@@ -36,7 +36,7 @@ function constructValidationErrorMessage(err) {
 async function validateComponentYaml(sourceRootDir) {
   try {
     // Validate the component YAML file
-    await componentYamlSchema(sourceRootDir).validate(componentYamlFile, {
+    await componentYamlSchemaV1D0(sourceRootDir).validate(componentYamlFile, {
       abortEarly: false,
     });
   } catch (err) {
