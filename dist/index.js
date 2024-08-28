@@ -36140,6 +36140,58 @@ yup.addMethod(yup.string, "schemaFileExists", function (srcDir) {
   });
 });
 
+// validateServiceName - Custom validation method to validate service name
+yup.addMethod(yup.string, "validateServiceName", function () {
+  return this.test({
+    name: "validate-service-name",
+    test: (value, testCtx) => {
+      const alphanumericRegex = "[a-z0-9_-]+";
+      const choreoSvcRefNameRegex = new RegExp(
+        `^choreo:\/\/\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/v\\d+(\\.\\d+)?\/(PUBLIC|PROJECT|ORGANIZATION)$`
+      );
+      const thirdPartySvcRefNameRegex = new RegExp(
+        "^thirdparty:[a-zA-Z0-9._/-]+$"
+      );
+      const dbSvcRefNameRegex = new RegExp("^database:[a-z0-9_/-]+$");
+
+      if (value.startsWith("choreo:///")) {
+        return (
+          choreoSvcRefNameRegex.test(value) ||
+          new yup.ValidationError(
+            `${testCtx.path} must follow the format ` +
+              `choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
+          )
+        );
+      }
+      if (value.startsWith("thirdparty:")) {
+        return (
+          thirdPartySvcRefNameRegex.test(value) ||
+          new yup.ValidationError(
+            `${testCtx.path} has an invalid service identifier, ` +
+              `only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) are allowed after thirdparty:`
+          )
+        );
+      }
+      if (value.startsWith("database:")) {
+        return (
+          dbSvcRefNameRegex.test(value) ||
+          new yup.ValidationError(
+            `${testCtx.path} has an invalid service identifier, ` +
+              `only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) are allowed after database:`
+          )
+        );
+      }
+      return (
+        thirdPartySvcRefNameRegex.test(value) ||
+        dbSvcRefNameRegex.test(value) ||
+        new yup.ValidationError(
+          `${testCtx.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
+        )
+      );
+    },
+  });
+});
+
 // Schema definitions
 // NOTE: specified schema versions are aligned with Rudder component schema versions
 // serviceSchema - Schema for service definition
@@ -36185,21 +36237,9 @@ const endpointSchemaV0D2 = (srcDir) =>
     .checkEndpointNameUniqueness();
 
 // serviceReferencesSchema - Schema for service references
-const alphanumericRegex = "[a-z0-9_-]+";
-const svcRefNameRegex = new RegExp(
-  `^choreo:\/\/\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/v\\d+(\\.\\d+)?\/(PUBLIC|PROJECT|ORGANIZATION)$`
-);
 const serviceReferencesSchema = yup.array().of(
   yup.object().shape({
-    name: yup
-      .string()
-      .required()
-      .matches(
-        svcRefNameRegex,
-        ({ path }) =>
-          `${path} must follow the format ` +
-          `choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
-      ),
+    name: yup.string().required().validateServiceName(),
     connectionConfig: yup.string().uuid().required(),
     env: yup
       .array()
