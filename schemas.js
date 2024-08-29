@@ -121,12 +121,8 @@ yup.addMethod(yup.string, "validateServiceName", function () {
           )
         );
       }
-      return (
-        thirdPartySvcRefNameRegex.test(value) ||
-        dbSvcRefNameRegex.test(value) ||
-        new yup.ValidationError(
-          `${testCtx.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
-        )
+      return new yup.ValidationError(
+        `${testCtx.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
       );
     },
   });
@@ -163,7 +159,7 @@ const endpointSchemaV0D2 = (srcDir) =>
           .matches(
             /^[a-z][a-z0-9_-]*$/,
             ({ path }) =>
-              `${path} must start with a lowercase letter and can contain lowercase letters, numbers, underscores (_), and hyphens (-).`
+              `${path} must start with a lowercase letter and can only contain lowercase letters, numbers, underscores (_), and hyphens (-).`
           ),
         displayName: yup.string().max(50),
         service: serviceSchema,
