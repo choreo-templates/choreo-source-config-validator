@@ -5,6 +5,7 @@ const path = require("path");
 
 // constants
 const ALLOWED_COMPONENT_YAML_VERSIONS = ["0.9", "1.0", "1.1"];
+const ALLOWED_ENDPOINT_YAML_VERSIONS = ["0.1"];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
@@ -35,16 +36,31 @@ yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
   });
 });
 
-// check to remove this
 // basePathRequired - Custom validation method to check base path is required for REST, GraphQL, and WS endpoints
 yup.addMethod(yup.object, "basePathRequired", function () {
   return this.test({
     name: "base-path-required",
     test: (value, testCtx) => {
-      const { type } = testCtx.parent;
-      if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value.basePath) {
+      const { type } = testCtx?.parent;
+      if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value?.basePath) {
         return new yup.ValidationError(
           "Base path is required for REST, GraphQL, and WS endpoints."
+        );
+      }
+      return true;
+    },
+  });
+});
+
+// contextRequired - Custom validation method to check context is required for REST, GraphQL, and WS endpoints
+yup.addMethod(yup.string, "contextRequired", function () {
+  return this.test({
+    name: "context-required",
+    test: (value, testCtx) => {
+      const { type } = testCtx?.parent;
+      if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value?.context) {
+        return new yup.ValidationError(
+          "Context is required for REST, GraphQL, and WS endpoints."
         );
       }
       return true;
@@ -98,7 +114,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           choreoSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx.path} must follow the format ` +
+            `${testCtx?.path} must follow the format ` +
               `choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
           )
         );
@@ -107,7 +123,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           thirdPartySvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx.path} has an invalid service identifier, ` +
+            `${testCtx?.path} has an invalid service identifier, ` +
               `only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) are allowed after thirdparty:`
           )
         );
@@ -116,13 +132,13 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           dbSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx.path} has an invalid service identifier, ` +
+            `${testCtx?.path} has an invalid service identifier, ` +
               `only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) are allowed after database:`
           )
         );
       }
       return new yup.ValidationError(
-        `${testCtx.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
+        `${testCtx?.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
       );
     },
   });
@@ -137,7 +153,7 @@ const serviceSchema = yup
     basePath: yup
       .string()
       .matches(
-        /^\/[a-zA-Z0-9\/-]*$/,
+        /^\/[a-zA-Z0-9\/-_]*$/,
         ({ path }) =>
           `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
       ),
@@ -145,6 +161,30 @@ const serviceSchema = yup
   })
   .required()
   .basePathRequired();
+
+// endpointSchemaV0D1 - Schema for endpoint definition V0.1
+const endpointSchemaV0D1 = (srcDir) =>
+  yup
+    .array()
+    .of(
+      yup.object().shape({
+        name: yup.string().required(),
+        port: yup.number().required().moreThan(1000).lessThan(65535),
+        type: yup.string().required().oneOf(ALLOWED_TYPES),
+        networkVisibility: yup.string().oneOf(ALLOWED_NETWORK_VISIBILITIES),
+        context: yup
+          .string()
+          .contextRequired()
+          .matches(
+            /^\/[a-zA-Z0-9\/-_]*$/,
+            ({ path }) =>
+              `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
+          ),
+        schemaFilePath: yup.string().schemaFileExists(srcDir),
+      })
+    )
+    .required()
+    .min(0);
 
 // endpointSchemaV0D2 - Schema for endpoint definition V0.2
 const endpointSchemaV0D2 = (srcDir) =>
@@ -205,6 +245,12 @@ const componentYamlSchemaV1D0 = (srcDir) =>
     dependencies: dependencySchemaV0D1,
   });
 
+const endpointYamlSchemaV0D1 = (srcDir) =>
+  yup.object().shape({
+    version: yup.string().required().oneOf(ALLOWED_ENDPOINT_YAML_VERSIONS),
+    endpoints: endpointSchemaV0D1(srcDir),
+  });
 module.exports = {
   componentYamlSchemaV1D0,
+  endpointYamlSchemaV0D1,
 };

@@ -2,22 +2,21 @@ const core = require("@actions/core");
 const fs = require("fs");
 const yaml = require("js-yaml");
 const path = require("path");
-const { componentYamlSchemaV1D0 } = require("./schemas");
+const {
+  componentYamlSchemaV1D0,
+  endpointYamlSchemaV0D1,
+} = require("./schemas");
 
 const SourceConfigFileTypes = {
   COMPONENT_YAML: "component.yaml",
   COMPONENT_CONFIG_YAML: "component-config.yaml",
-  ENDPOINT_YAML: "endpoint.yaml",
+  ENDPOINT_YAML: "endpoints.yaml",
 };
 
 function readInput() {
-  try {
-    sourceRootDir = core.getInput("source-root-dir-path");
-    fileType = core.getInput("file-type");
-    return [sourceRootDir, fileType];
-  } catch (error) {
-    throw new Error(`Failed to read input: ${error.message}`);
-  }
+  sourceRootDir = core.getInput("source-root-dir-path");
+  fileType = core.getInput("file-type");
+  return [sourceRootDir, fileType];
 }
 
 function readSrcConfigYaml(filePath, fileType) {
@@ -25,13 +24,16 @@ function readSrcConfigYaml(filePath, fileType) {
     let fullPath = path.join(filePath, ".choreo");
     switch (fileType) {
       case SourceConfigFileTypes.COMPONENT_YAML:
-        fullPath = path.join(fullPath, "component.yaml");
+        fullPath = path.join(fullPath, SourceConfigFileTypes.COMPONENT_YAML);
         break;
       case SourceConfigFileTypes.COMPONENT_CONFIG_YAML:
-        fullPath = path.join(fullPath, "component-config.yaml");
+        fullPath = path.join(
+          fullPath,
+          SourceConfigFileTypes.COMPONENT_CONFIG_YAML
+        );
         break;
       case SourceConfigFileTypes.ENDPOINT_YAML:
-        fullPath = path.join(fullPath, "endpoint.yaml");
+        fullPath = path.join(fullPath, SourceConfigFileTypes.ENDPOINT_YAML);
         break;
       default:
         throw new Error(`'${fileType}' is not a valid source config file type`);
@@ -48,7 +50,7 @@ function constructValidationErrorMessage(err, fileType) {
   if (errors.length == 0) {
     return `Failed to validate ${fileType}, something went wrong:` + err;
   }
-  const errorMsg = `${fileType} validation failed:`;
+  const errorMsg = `${fileType} validation failed: `;
   const errorList =
     errors.length === 1 ? errors[0] : errors.map((e) => `\n- ${e}`).join("");
   return errorMsg + errorList;
@@ -60,16 +62,17 @@ async function validateSourceConfigFile(sourceRootDir, fileType) {
       case SourceConfigFileTypes.COMPONENT_YAML:
         await componentYamlSchemaV1D0(sourceRootDir).validate(
           srcConfigYamlFile,
-          {
-            abortEarly: false,
-          }
+          { abortEarly: false }
         );
         break;
       case SourceConfigFileTypes.COMPONENT_CONFIG_YAML:
         return true;
       // break;
       case SourceConfigFileTypes.ENDPOINT_YAML:
-        return true;
+        await endpointYamlSchemaV0D1(sourceRootDir).validate(
+          srcConfigYamlFile,
+          { abortEarly: false }
+        );
       // break;
       default:
         break;
