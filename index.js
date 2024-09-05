@@ -7,12 +7,7 @@ const {
   endpointYamlSchemaV0D1,
   componentConfigYamlSchemaV1beta1,
 } = require("./schemas");
-
-const SourceConfigFileTypes = {
-  COMPONENT_YAML: "component.yaml",
-  COMPONENT_CONFIG_YAML: "component-config.yaml",
-  ENDPOINT_YAML: "endpoints.yaml",
-};
+const { sourceConfigFileTypes } = require("./enums");
 
 function readInput() {
   sourceRootDir = core.getInput("source-root-dir-path");
@@ -23,22 +18,16 @@ function readInput() {
 function readSrcConfigYaml(filePath, fileType) {
   try {
     let fullPath = path.join(filePath, ".choreo");
-    switch (fileType) {
-      case SourceConfigFileTypes.COMPONENT_YAML:
-        fullPath = path.join(fullPath, SourceConfigFileTypes.COMPONENT_YAML);
-        break;
-      case SourceConfigFileTypes.COMPONENT_CONFIG_YAML:
-        fullPath = path.join(
-          fullPath,
-          SourceConfigFileTypes.COMPONENT_CONFIG_YAML
-        );
-        break;
-      case SourceConfigFileTypes.ENDPOINT_YAML:
-        fullPath = path.join(fullPath, SourceConfigFileTypes.ENDPOINT_YAML);
-        break;
-      default:
-        throw new Error(`'${fileType}' is not a valid source config file type`);
+    if (
+      fileType === sourceConfigFileTypes.COMPONENT_YAML ||
+      fileType === sourceConfigFileTypes.ENDPOINT_YAML ||
+      fileType === sourceConfigFileTypes.COMPONENT_CONFIG_YAML
+    ) {
+      fullPath = path.join(fullPath, fileType);
+    } else {
+      throw new Error(`'${fileType}' is not a valid source config file type`);
     }
+
     let fileContent = fs.readFileSync(fullPath, "utf8");
     return fileContent;
   } catch (error) {
@@ -60,19 +49,19 @@ function constructValidationErrorMessage(err, fileType) {
 async function validateSourceConfigFile(sourceRootDir, fileType) {
   try {
     switch (fileType) {
-      case SourceConfigFileTypes.COMPONENT_YAML:
+      case sourceConfigFileTypes.COMPONENT_YAML:
         await componentYamlSchemaV1D0(sourceRootDir).validate(
           srcConfigYamlFile,
           { abortEarly: false }
         );
         break;
-      case SourceConfigFileTypes.COMPONENT_CONFIG_YAML:
+      case sourceConfigFileTypes.COMPONENT_CONFIG_YAML:
         await componentConfigYamlSchemaV1beta1(sourceRootDir).validate(
           srcConfigYamlFile,
           { abortEarly: false }
         );
         break;
-      case SourceConfigFileTypes.ENDPOINT_YAML:
+      case sourceConfigFileTypes.ENDPOINT_YAML:
         await endpointYamlSchemaV0D1(sourceRootDir).validate(
           srcConfigYamlFile,
           { abortEarly: false }
@@ -96,7 +85,7 @@ async function main() {
     await validateSourceConfigFile(sourceRootDir, fileType);
   } catch (error) {
     console.log("Validation Error: ", error.message);
-    core.setFailed("source config file validation failed ", error.message);
+    core.setFailed("Source config file validation failed ", error.message);
   }
 }
 

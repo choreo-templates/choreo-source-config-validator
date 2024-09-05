@@ -9,7 +9,8 @@ const ALLOWED_ENDPOINT_YAML_VERSIONS = ["0.1"];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
-
+const COMPONENT_CONFIG_YAML_API_VERSION = ["core.choreo.dev/v1beta1"];
+const COMPONENT_CONFIG_YAML_KIND = ["ComponentConfig"];
 // custom validators
 // checkEndpointNameUniqueness - Custom validation method to check if endpoint names are unique
 yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
@@ -41,7 +42,7 @@ yup.addMethod(yup.object, "basePathRequired", function () {
   return this.test({
     name: "base-path-required",
     test: (value, testCtx) => {
-      const { type } = testCtx?.parent;
+      const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value?.basePath) {
         return new yup.ValidationError(
           "Base path is required for REST, GraphQL, and WS endpoints"
@@ -57,7 +58,7 @@ yup.addMethod(yup.string, "contextRequired", function () {
   return this.test({
     name: "context-required",
     test: (value, testCtx) => {
-      const { type } = testCtx?.parent;
+      const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value) {
         return new yup.ValidationError(
           "Context is required for REST, GraphQL, and WS endpoints"
@@ -114,7 +115,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           choreoSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx?.path} must follow the format ` +
+            `${testCtx.path} must follow the format ` +
               `choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
           )
         );
@@ -123,7 +124,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           thirdPartySvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx?.path} has an invalid service identifier, ` +
+            `${testCtx.path} has an invalid service identifier, ` +
               `only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) are allowed after thirdparty:`
           )
         );
@@ -132,13 +133,13 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           dbSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx?.path} has an invalid service identifier, ` +
+            `${testCtx.path} has an invalid service identifier, ` +
               `only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) are allowed after database:`
           )
         );
       }
       return new yup.ValidationError(
-        `${testCtx?.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
+        `${testCtx.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
       );
     },
   });
@@ -155,7 +156,7 @@ const serviceSchema = yup
       .matches(
         /^\/[a-zA-Z0-9\/-_]*$/,
         ({ path }) =>
-          `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
+          `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, underscores and forward slashes.`
       ),
     port: yup.number().required().moreThan(1000).lessThan(65535),
   })
@@ -258,8 +259,11 @@ const endpointYamlSchemaV0D1 = (srcDir) =>
 // componentConfigYamlSchemaV1D0 - Schema for component-config.yaml
 const componentConfigYamlSchemaV1beta1 = (srcDir) =>
   yup.object().shape({
-    apiVersion: yup.string().required().oneOf(["core.choreo.dev/v1beta1"]),
-    kind: yup.string().required().oneOf(["ComponentConfig"]),
+    apiVersion: yup
+      .string()
+      .required()
+      .oneOf(COMPONENT_CONFIG_YAML_API_VERSION),
+    kind: yup.string().required().equals(COMPONENT_CONFIG_YAML_KIND),
     spec: specSchema(srcDir),
   });
 

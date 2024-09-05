@@ -1,6 +1,22 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 5376:
+/***/ ((module) => {
+
+const sourceConfigFileTypes = {
+  COMPONENT_YAML: "component.yaml",
+  COMPONENT_CONFIG_YAML: "component-config.yaml",
+  ENDPOINT_YAML: "endpoints.yaml",
+};
+
+module.exports = {
+  sourceConfigFileTypes,
+};
+
+
+/***/ }),
+
 /***/ 3648:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -36069,7 +36085,8 @@ const ALLOWED_ENDPOINT_YAML_VERSIONS = ["0.1"];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
-
+const COMPONENT_CONFIG_YAML_API_VERSION = ["core.choreo.dev/v1beta1"];
+const COMPONENT_CONFIG_YAML_KIND = ["ComponentConfig"];
 // custom validators
 // checkEndpointNameUniqueness - Custom validation method to check if endpoint names are unique
 yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
@@ -36101,7 +36118,7 @@ yup.addMethod(yup.object, "basePathRequired", function () {
   return this.test({
     name: "base-path-required",
     test: (value, testCtx) => {
-      const { type } = testCtx?.parent;
+      const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value?.basePath) {
         return new yup.ValidationError(
           "Base path is required for REST, GraphQL, and WS endpoints"
@@ -36117,7 +36134,7 @@ yup.addMethod(yup.string, "contextRequired", function () {
   return this.test({
     name: "context-required",
     test: (value, testCtx) => {
-      const { type } = testCtx?.parent;
+      const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value) {
         return new yup.ValidationError(
           "Context is required for REST, GraphQL, and WS endpoints"
@@ -36174,7 +36191,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           choreoSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx?.path} must follow the format ` +
+            `${testCtx.path} must follow the format ` +
               `choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
           )
         );
@@ -36183,7 +36200,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           thirdPartySvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx?.path} has an invalid service identifier, ` +
+            `${testCtx.path} has an invalid service identifier, ` +
               `only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) are allowed after thirdparty:`
           )
         );
@@ -36192,13 +36209,13 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           dbSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx?.path} has an invalid service identifier, ` +
+            `${testCtx.path} has an invalid service identifier, ` +
               `only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) are allowed after database:`
           )
         );
       }
       return new yup.ValidationError(
-        `${testCtx?.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
+        `${testCtx.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
       );
     },
   });
@@ -36215,7 +36232,7 @@ const serviceSchema = yup
       .matches(
         /^\/[a-zA-Z0-9\/-_]*$/,
         ({ path }) =>
-          `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
+          `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, underscores and forward slashes.`
       ),
     port: yup.number().required().moreThan(1000).lessThan(65535),
   })
@@ -36318,8 +36335,11 @@ const endpointYamlSchemaV0D1 = (srcDir) =>
 // componentConfigYamlSchemaV1D0 - Schema for component-config.yaml
 const componentConfigYamlSchemaV1beta1 = (srcDir) =>
   yup.object().shape({
-    apiVersion: yup.string().required().oneOf(["core.choreo.dev/v1beta1"]),
-    kind: yup.string().required().oneOf(["ComponentConfig"]),
+    apiVersion: yup
+      .string()
+      .required()
+      .oneOf(COMPONENT_CONFIG_YAML_API_VERSION),
+    kind: yup.string().required().equals(COMPONENT_CONFIG_YAML_KIND),
     spec: specSchema(srcDir),
   });
 
@@ -38231,12 +38251,7 @@ const {
   endpointYamlSchemaV0D1,
   componentConfigYamlSchemaV1beta1,
 } = __nccwpck_require__(1677);
-
-const SourceConfigFileTypes = {
-  COMPONENT_YAML: "component.yaml",
-  COMPONENT_CONFIG_YAML: "component-config.yaml",
-  ENDPOINT_YAML: "endpoints.yaml",
-};
+const { sourceConfigFileTypes } = __nccwpck_require__(5376);
 
 function readInput() {
   sourceRootDir = core.getInput("source-root-dir-path");
@@ -38247,22 +38262,16 @@ function readInput() {
 function readSrcConfigYaml(filePath, fileType) {
   try {
     let fullPath = path.join(filePath, ".choreo");
-    switch (fileType) {
-      case SourceConfigFileTypes.COMPONENT_YAML:
-        fullPath = path.join(fullPath, SourceConfigFileTypes.COMPONENT_YAML);
-        break;
-      case SourceConfigFileTypes.COMPONENT_CONFIG_YAML:
-        fullPath = path.join(
-          fullPath,
-          SourceConfigFileTypes.COMPONENT_CONFIG_YAML
-        );
-        break;
-      case SourceConfigFileTypes.ENDPOINT_YAML:
-        fullPath = path.join(fullPath, SourceConfigFileTypes.ENDPOINT_YAML);
-        break;
-      default:
-        throw new Error(`'${fileType}' is not a valid source config file type`);
+    if (
+      fileType === sourceConfigFileTypes.COMPONENT_YAML ||
+      fileType === sourceConfigFileTypes.ENDPOINT_YAML ||
+      fileType === sourceConfigFileTypes.COMPONENT_CONFIG_YAML
+    ) {
+      fullPath = path.join(fullPath, fileType);
+    } else {
+      throw new Error(`'${fileType}' is not a valid source config file type`);
     }
+
     let fileContent = fs.readFileSync(fullPath, "utf8");
     return fileContent;
   } catch (error) {
@@ -38284,19 +38293,19 @@ function constructValidationErrorMessage(err, fileType) {
 async function validateSourceConfigFile(sourceRootDir, fileType) {
   try {
     switch (fileType) {
-      case SourceConfigFileTypes.COMPONENT_YAML:
+      case sourceConfigFileTypes.COMPONENT_YAML:
         await componentYamlSchemaV1D0(sourceRootDir).validate(
           srcConfigYamlFile,
           { abortEarly: false }
         );
         break;
-      case SourceConfigFileTypes.COMPONENT_CONFIG_YAML:
+      case sourceConfigFileTypes.COMPONENT_CONFIG_YAML:
         await componentConfigYamlSchemaV1beta1(sourceRootDir).validate(
           srcConfigYamlFile,
           { abortEarly: false }
         );
         break;
-      case SourceConfigFileTypes.ENDPOINT_YAML:
+      case sourceConfigFileTypes.ENDPOINT_YAML:
         await endpointYamlSchemaV0D1(sourceRootDir).validate(
           srcConfigYamlFile,
           { abortEarly: false }
@@ -38320,7 +38329,7 @@ async function main() {
     await validateSourceConfigFile(sourceRootDir, fileType);
   } catch (error) {
     console.log("Validation Error: ", error.message);
-    core.setFailed("source config file validation failed ", error.message);
+    core.setFailed("Source config file validation failed ", error.message);
   }
 }
 
