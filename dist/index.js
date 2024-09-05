@@ -1,6 +1,22 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 5376:
+/***/ ((module) => {
+
+const sourceConfigFileTypes = {
+  COMPONENT_YAML: "component.yaml",
+  COMPONENT_CONFIG_YAML: "component-config.yaml",
+  ENDPOINT_YAML: "endpoints.yaml",
+};
+
+module.exports = {
+  sourceConfigFileTypes,
+};
+
+
+/***/ }),
+
 /***/ 3648:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -36065,10 +36081,12 @@ const path = __nccwpck_require__(1017);
 
 // constants
 const ALLOWED_COMPONENT_YAML_VERSIONS = ["0.9", "1.0", "1.1"];
+const ALLOWED_ENDPOINT_YAML_VERSIONS = ["0.1"];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
-
+const COMPONENT_CONFIG_YAML_API_VERSION = ["core.choreo.dev/v1beta1"];
+const COMPONENT_CONFIG_YAML_KIND = ["ComponentConfig"];
 // custom validators
 // checkEndpointNameUniqueness - Custom validation method to check if endpoint names are unique
 yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
@@ -36089,22 +36107,37 @@ yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
         return true;
       });
       return (
-        isUnique || new yup.ValidationError("Endpoint names must be unique.")
+        isUnique || new yup.ValidationError("Endpoint names must be unique")
       );
     },
   });
 });
 
-// check to remove this
 // basePathRequired - Custom validation method to check base path is required for REST, GraphQL, and WS endpoints
 yup.addMethod(yup.object, "basePathRequired", function () {
   return this.test({
     name: "base-path-required",
     test: (value, testCtx) => {
       const { type } = testCtx.parent;
-      if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value.basePath) {
+      if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value?.basePath) {
         return new yup.ValidationError(
-          "Base path is required for REST, GraphQL, and WS endpoints."
+          "Base path is required for REST, GraphQL, and WS endpoints"
+        );
+      }
+      return true;
+    },
+  });
+});
+
+// contextRequired - Custom validation method to check context is required for REST, GraphQL, and WS endpoints
+yup.addMethod(yup.string, "contextRequired", function () {
+  return this.test({
+    name: "context-required",
+    test: (value, testCtx) => {
+      const { type } = testCtx.parent;
+      if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value) {
+        return new yup.ValidationError(
+          "Context is required for REST, GraphQL, and WS endpoints"
         );
       }
       return true;
@@ -36197,14 +36230,34 @@ const serviceSchema = yup
     basePath: yup
       .string()
       .matches(
-        /^\/[a-zA-Z0-9\/-]*$/,
+        /^\/[a-zA-Z0-9\/-_]*$/,
         ({ path }) =>
-          `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
+          `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, underscores and forward slashes.`
       ),
     port: yup.number().required().moreThan(1000).lessThan(65535),
   })
   .required()
   .basePathRequired();
+
+// endpointSchemaV0D1 - Schema for endpoint definition V0.1
+const endpointSchemaV0D1 = (srcDir) =>
+  yup.array().of(
+    yup.object().shape({
+      name: yup.string().required(),
+      port: yup.number().required().moreThan(1000).lessThan(65535),
+      type: yup.string().required().oneOf(ALLOWED_TYPES),
+      networkVisibility: yup.string().oneOf(ALLOWED_NETWORK_VISIBILITIES),
+      context: yup
+        .string()
+        .contextRequired()
+        .matches(
+          /^\/[a-zA-Z0-9\/-_]*$/,
+          ({ path }) =>
+            `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
+        ),
+      schemaFilePath: yup.string().schemaFileExists(srcDir),
+    })
+  );
 
 // endpointSchemaV0D2 - Schema for endpoint definition V0.2
 const endpointSchemaV0D2 = (srcDir) =>
@@ -36254,6 +36307,13 @@ const dependencySchemaV0D1 = yup.object().shape({
   serviceReferences: serviceReferencesSchema,
 });
 
+// specSchema - Schema for spec definition
+const specSchema = (srcDir) =>
+  yup.object().shape({
+    inbound: endpointSchemaV0D1(srcDir).min(0),
+    outbound: dependencySchemaV0D1,
+  });
+
 // componentYamlSchema - Schema for component.yaml
 const componentYamlSchemaV1D0 = (srcDir) =>
   yup.object().shape({
@@ -36265,8 +36325,28 @@ const componentYamlSchemaV1D0 = (srcDir) =>
     dependencies: dependencySchemaV0D1,
   });
 
+// endpointYamlSchema - Schema for endpoints.yaml
+const endpointYamlSchemaV0D1 = (srcDir) =>
+  yup.object().shape({
+    version: yup.string().required().oneOf(ALLOWED_ENDPOINT_YAML_VERSIONS),
+    endpoints: endpointSchemaV0D1(srcDir).required().min(0),
+  });
+
+// componentConfigYamlSchemaV1D0 - Schema for component-config.yaml
+const componentConfigYamlSchemaV1beta1 = (srcDir) =>
+  yup.object().shape({
+    apiVersion: yup
+      .string()
+      .required()
+      .oneOf(COMPONENT_CONFIG_YAML_API_VERSION),
+    kind: yup.string().required().equals(COMPONENT_CONFIG_YAML_KIND),
+    spec: specSchema(srcDir),
+  });
+
 module.exports = {
   componentYamlSchemaV1D0,
+  endpointYamlSchemaV0D1,
+  componentConfigYamlSchemaV1beta1,
 };
 
 
@@ -38166,58 +38246,90 @@ const core = __nccwpck_require__(2153);
 const fs = __nccwpck_require__(7147);
 const yaml = __nccwpck_require__(3966);
 const path = __nccwpck_require__(1017);
-const { componentYamlSchemaV1D0 } = __nccwpck_require__(1677);
+const {
+  componentYamlSchemaV1D0,
+  endpointYamlSchemaV0D1,
+  componentConfigYamlSchemaV1beta1,
+} = __nccwpck_require__(1677);
+const { sourceConfigFileTypes } = __nccwpck_require__(5376);
 
 function readInput() {
-  try {
-    sourceRootDir = core.getInput("source-root-dir-path");
-    return sourceRootDir;
-  } catch (error) {
-    throw new Error(`Failed to read input: ${error.message}`);
-  }
+  sourceRootDir = core.getInput("source-root-dir-path");
+  fileType = core.getInput("file-type");
+  return [sourceRootDir, fileType];
 }
 
-function readComponentYaml(filePath) {
+function readSrcConfigYaml(filePath, fileType) {
   try {
-    fullPath = path.join(filePath, ".choreo", "component.yaml");
+    let fullPath = path.join(filePath, ".choreo");
+    if (
+      fileType === sourceConfigFileTypes.COMPONENT_YAML ||
+      fileType === sourceConfigFileTypes.ENDPOINT_YAML ||
+      fileType === sourceConfigFileTypes.COMPONENT_CONFIG_YAML
+    ) {
+      fullPath = path.join(fullPath, fileType);
+    } else {
+      throw new Error(`'${fileType}' is not a valid source config file type`);
+    }
+
     let fileContent = fs.readFileSync(fullPath, "utf8");
     return fileContent;
   } catch (error) {
-    throw new Error(`Failed to read component.yaml: ${error.message}`);
+    throw new Error(`\nFailed to read source config file: ${error.message}`);
   }
 }
 
-function constructValidationErrorMessage(err) {
+function constructValidationErrorMessage(err, fileType) {
   const errors = err.errors;
-  if (errors.length == 0) {
-    return "Failed to validate component.yaml, something went wrong:" + err;
+  if (!errors || errors.length == 0) {
+    return `Failed to validate ${fileType}, something went wrong:` + err;
   }
+  const errorMsg = `${fileType} validation failed: `;
   const errorList =
     errors.length === 1 ? errors[0] : errors.map((e) => `\n- ${e}`).join("");
-  return errorList;
+  return errorMsg + errorList;
 }
 
-async function validateComponentYaml(sourceRootDir) {
+async function validateSourceConfigFile(sourceRootDir, fileType) {
   try {
+    switch (fileType) {
+      case sourceConfigFileTypes.COMPONENT_YAML:
+        await componentYamlSchemaV1D0(sourceRootDir).validate(
+          srcConfigYamlFile,
+          { abortEarly: false }
+        );
+        break;
+      case sourceConfigFileTypes.COMPONENT_CONFIG_YAML:
+        await componentConfigYamlSchemaV1beta1(sourceRootDir).validate(
+          srcConfigYamlFile,
+          { abortEarly: false }
+        );
+        break;
+      case sourceConfigFileTypes.ENDPOINT_YAML:
+        await endpointYamlSchemaV0D1(sourceRootDir).validate(
+          srcConfigYamlFile,
+          { abortEarly: false }
+        );
+        break;
+      default:
+        throw new Error(`'${fileType}' is not a valid source config file type`);
+    }
     // Validate the component YAML file
-    await componentYamlSchemaV1D0(sourceRootDir).validate(componentYamlFile, {
-      abortEarly: false,
-    });
   } catch (err) {
-    throw new Error(constructValidationErrorMessage(err));
+    throw new Error(constructValidationErrorMessage(err, fileType));
   }
 }
 
 async function main() {
   try {
-    const sourceRootDir = readInput();
-    const fileContent = readComponentYaml(sourceRootDir);
+    const [sourceRootDir, fileType] = readInput();
+    const fileContent = readSrcConfigYaml(sourceRootDir, fileType);
     // Parse the yaml content
-    componentYamlFile = yaml.load(fileContent);
-    await validateComponentYaml(sourceRootDir);
+    srcConfigYamlFile = yaml.load(fileContent);
+    await validateSourceConfigFile(sourceRootDir, fileType);
   } catch (error) {
-    console.log("component.yaml validation failed: ", error.message);
-    core.setFailed("component.yaml validation failed ", error.message);
+    console.log("Validation Error: ", error.message);
+    core.setFailed("Source config file validation failed ", error.message);
   }
 }
 
