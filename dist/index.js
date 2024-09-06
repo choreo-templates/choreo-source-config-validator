@@ -38290,6 +38290,7 @@ function readSrcConfigYaml(filePath, fileType) {
 function parseYaml(fileContent) {
   try {
     srcConfigYamlFile = yaml.load(fileContent);
+    return srcConfigYamlFile;
   } catch (error) {
     throw new Error(
       `${errCodes.USER_ERROR} Failed to parse yaml: ${error.message}`
