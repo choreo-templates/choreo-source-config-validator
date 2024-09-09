@@ -154,7 +154,7 @@ const serviceSchema = yup
     basePath: yup
       .string()
       .matches(
-        /^\/[a-zA-Z0-9\/-_]*$/,
+        /^\/[a-zA-Z0-9\/\-_]*$/,
         ({ path }) =>
           `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, underscores and forward slashes.`
       ),
@@ -175,7 +175,7 @@ const endpointSchemaV0D1 = (srcDir) =>
         .string()
         .contextRequired()
         .matches(
-          /^\/[a-zA-Z0-9\/-_]*$/,
+          /^\/[a-zA-Z0-9\/\-_]*$/,
           ({ path }) =>
             `${path} must start with a forward slash and can only contain alphanumeric characters, hyphens, and forward slashes.`
         ),
