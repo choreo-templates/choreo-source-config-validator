@@ -5,7 +5,6 @@ const path = require("path");
 
 // constants
 const ALLOWED_COMPONENT_YAML_VERSIONS = ["0.9", "1.0", "1.1"];
-const ALLOWED_ENDPOINT_YAML_VERSIONS = ["0.1"];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
@@ -252,7 +251,7 @@ const componentYamlSchemaV1D0 = (srcDir) =>
 // endpointYamlSchema - Schema for endpoints.yaml
 const endpointYamlSchemaV0D1 = (srcDir) =>
   yup.object().shape({
-    version: yup.string().required().oneOf(ALLOWED_ENDPOINT_YAML_VERSIONS),
+    version: yup.string().required(),
     endpoints: endpointSchemaV0D1(srcDir).required().min(0),
   });
 
