@@ -36183,14 +36183,14 @@ yup.addMethod(yup.string, "validateServiceName", function () {
   return this.test({
     name: "validate-service-name",
     test: (value, testCtx) => {
-      const alphanumericRegex = "[a-z0-9_-]+";
+      const alphanumericRegex = "[a-zA-Z0-9_-]+";
       const choreoSvcRefNameRegex = new RegExp(
         `^choreo:\/\/\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/v\\d+(\\.\\d+)?\/(PUBLIC|PROJECT|ORGANIZATION)$`
       );
       const thirdPartySvcRefNameRegex = new RegExp(
         "^thirdparty:[a-zA-Z0-9._/-]+$"
       );
-      const dbSvcRefNameRegex = new RegExp("^database:[a-z0-9_/-]+$");
+      const dbSvcRefNameRegex = new RegExp("^database:[a-zA-Z0-9_/-]+$");
 
       if (value.startsWith("choreo:///")) {
         return (
