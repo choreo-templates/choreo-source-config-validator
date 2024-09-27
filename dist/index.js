@@ -36086,7 +36086,7 @@ const fs = __nccwpck_require__(7147);
 const path = __nccwpck_require__(1017);
 
 // constants
-const ALLOWED_COMPONENT_YAML_VERSIONS = ["0.9", "1.0", "1.1"];
+const ALLOWED_COMPONENT_YAML_VERSIONS = [0.9, 1.0, 1.1];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
@@ -36323,7 +36323,7 @@ const specSchema = (srcDir) =>
 const componentYamlSchemaV1D0 = (srcDir) =>
   yup.object().shape({
     schemaVersion: yup
-      .string()
+      .number()
       .required()
       .oneOf(ALLOWED_COMPONENT_YAML_VERSIONS),
     endpoints: endpointSchemaV0D2(srcDir),
