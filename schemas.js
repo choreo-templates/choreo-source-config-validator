@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 // constants
-const ALLOWED_COMPONENT_YAML_VERSIONS = ["0.9", "1.0", "1.1"];
+const ALLOWED_COMPONENT_YAML_VERSIONS = [0.9, 1.0, 1.1];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
@@ -241,9 +241,12 @@ const specSchema = (srcDir) =>
 const componentYamlSchemaV1D0 = (srcDir) =>
   yup.object().shape({
     schemaVersion: yup
-      .string()
+      .number()
       .required()
-      .oneOf(ALLOWED_COMPONENT_YAML_VERSIONS),
+      .oneOf(
+        ALLOWED_COMPONENT_YAML_VERSIONS,
+        "schemaVersion must be one of the following values: 0.9, 1.0, 1.1"
+      ),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D1,
   });
