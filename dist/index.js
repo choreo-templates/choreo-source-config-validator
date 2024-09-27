@@ -36325,7 +36325,10 @@ const componentYamlSchemaV1D0 = (srcDir) =>
     schemaVersion: yup
       .number()
       .required()
-      .oneOf(ALLOWED_COMPONENT_YAML_VERSIONS),
+      .oneOf(
+        ALLOWED_COMPONENT_YAML_VERSIONS,
+        "schemaVersion must be one of the following values: 0.9, 1.0, 1.1"
+      ),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D1,
   });
