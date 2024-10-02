@@ -44,7 +44,7 @@ yup.addMethod(yup.object, "basePathRequired", function () {
       const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value?.basePath) {
         return new yup.ValidationError(
-          "Base path is required for REST, GraphQL, and WS endpoints"
+          `${testCtx.path} is required for ${type}-type endpoints`
         );
       }
       return true;
@@ -60,7 +60,7 @@ yup.addMethod(yup.string, "contextRequired", function () {
       const { type } = testCtx.parent;
       if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value) {
         return new yup.ValidationError(
-          "Context is required for REST, GraphQL, and WS endpoints"
+          `${testCtx.path} is required for ${type}-type endpoints`
         );
       }
       return true;
