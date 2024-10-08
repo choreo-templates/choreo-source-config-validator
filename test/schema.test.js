@@ -96,7 +96,7 @@ describe("endpointYamlSchemaV0D1 schema tests", () => {
 
   test("should fail when schema file does not exist in the give path", () => {
     const expectedErrors = [
-      "Schema file does not exist at the given path invalid-path.yaml",
+      "Schema file does not exist at the given path invalid-path.yaml.",
     ];
     expectValidationErrors(validateSchemaFilePathYaml, expectedErrors);
   });
