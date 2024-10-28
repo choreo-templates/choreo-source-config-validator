@@ -102,7 +102,7 @@ endpoints:
         port: 9090
       type: UDP`;
 
-const validateBasePathRequired = `schemaVersion: 1.0
+const validateBasePathOptional = `schemaVersion: 1.0
 endpoints:
     - name: greeter-sample
       displayName: greeter sample
@@ -338,7 +338,7 @@ module.exports = {
   validateEndpointName,
   validateEndpointDisplayName,
   validateServiceSchema,
-  validateBasePathRequired,
+  validateBasePathOptional,
   validateTypeField,
   validateNetworkVisibilityField,
   validateSchemaFilePath,
