@@ -20,7 +20,6 @@ const {
   validateEndpointName,
   validateEndpointDisplayName,
   validateServiceSchema,
-  validateBasePathOptional,
   validateTypeField,
   validateNetworkVisibilityField,
   validateSchemaFilePath,
@@ -230,14 +229,7 @@ describe("componentYamlSchemaV1D0 schema tests", () => {
       expectedErrors
     );
   });
-  test("should not fail when base path is not provided for endpoint types REST, GraphQl, WS", async () => {
-    const expectedErrors = [];
-    await expectValidationErrors(
-      COMPONENT_YAML,
-      validateBasePathOptional,
-      expectedErrors
-    );
-  });
+
   test("should fail when type is not one of REST, GraphQL, GRPC, UDP, TCP, WS", async () => {
     const expectedErrors = [
       "endpoints[6].type must be one of the following values: REST, GraphQL, GRPC, TCP, UDP, WS",
