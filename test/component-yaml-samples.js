@@ -102,39 +102,6 @@ endpoints:
         port: 9090
       type: UDP`;
 
-const validateBasePathRequired = `schemaVersion: 1.0
-endpoints:
-    - name: greeter-sample
-      displayName: greeter sample
-      service:
-        port: 9090
-      type: GRPC
-    - name: greeter-sample2
-      displayName: greeter sample
-      service:
-        port: 9090
-      type: WS
-    - name: greeter-sample3
-      displayName: greeter sample
-      service:
-        port: 9090
-      type: REST
-    - name: greeter-sample4
-      displayName: greeter sample
-      service:
-        port: 9090
-      type: GraphQL
-    - name: greeter-sample5
-      displayName: greeter sample
-      service:
-        port: 9090
-      type: TCP
-    - name: greeter-sample6
-      displayName: greeter sample
-      service:
-        port: 9090
-      type: UDP`;
-
 const validateTypeField = `schemaVersion: 1.0
 endpoints:
     - name: greeter-sample
@@ -338,7 +305,6 @@ module.exports = {
   validateEndpointName,
   validateEndpointDisplayName,
   validateServiceSchema,
-  validateBasePathRequired,
   validateTypeField,
   validateNetworkVisibilityField,
   validateSchemaFilePath,

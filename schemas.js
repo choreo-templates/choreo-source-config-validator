@@ -36,22 +36,6 @@ yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
   });
 });
 
-// basePathRequired - Custom validation method to check base path is required for REST, GraphQL, and WS endpoints
-yup.addMethod(yup.object, "basePathRequired", function () {
-  return this.test({
-    name: "base-path-required",
-    test: (value, testCtx) => {
-      const { type } = testCtx.parent;
-      if (BASE_PATH_REQUIRED_TYPES.includes(type) && !value?.basePath) {
-        return new yup.ValidationError(
-          `${testCtx.path} is required for ${type}-type endpoints`
-        );
-      }
-      return true;
-    },
-  });
-});
-
 // contextRequired - Custom validation method to check context is required for REST, GraphQL, and WS endpoints
 yup.addMethod(yup.string, "contextRequired", function () {
   return this.test({
@@ -160,7 +144,6 @@ const serviceSchema = yup
     port: yup.number().required().moreThan(1000).lessThan(65535),
   })
   .required()
-  .basePathRequired();
 
 // endpointSchemaV0D1 - Schema for endpoint definition V0.1
 const endpointSchemaV0D1 = (srcDir) =>
