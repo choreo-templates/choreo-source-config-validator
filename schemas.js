@@ -90,7 +90,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         `^choreo:\/\/\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/v\\d+(\\.\\d+)?\/(PUBLIC|PROJECT|ORGANIZATION)$`
       );
       const thirdPartySvcRefNameRegex = new RegExp(
-        "^thirdparty:([a-zA-Z0-9_.\- ]+)\/([vV]\d+(\.\d+)*)$"
+        "^thirdparty:([a-zA-Z0-9_.\s\-]+)\/([vV]\d+(\.\d+)*)$"
       );
       const dbSvcRefNameRegex = new RegExp(
         "^database:(([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)$"
@@ -139,7 +139,7 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
         "^(service:)?(\/([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)\/([vV]\d+(\.\d+)*)(\/([a-zA-Z0-9_-]+))?(\/(PUBLIC|PROJECT|ORGANIZATION))?$"
       );
       const thirdPartySvcRefNameRegex = new RegExp(
-        "^thirdparty:([a-zA-Z0-9_.\- ]+)\/([vV]\d+(\.\d+)*)$"
+        "^thirdparty:([a-zA-Z0-9_.\s\-]+)\/([vV]\d+(\.\d+)*)$"
       );
       const dbSvcRefNameRegex = new RegExp(
         "^database:(([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)$"
@@ -271,7 +271,7 @@ const serviceReferencesSchema = yup.array().of(
 const connectionReferencesSchema = yup.array().of(
   yup.object().shape({
     name: yup.string().required().matches(
-      /^([a-zA-Z0-9_.\- ]+)$/,
+      /^([a-zA-Z0-9_.\s\-]+)$/,
       ({ path }) =>
         `${path} can only contain alphanumeric characters, underscores (_), hyphens (-), dots (.) and spaces ( ).`
     ),
@@ -303,8 +303,7 @@ const componentYamlSchemaV1D0 = (srcDir) =>
     schemaVersion: yup
       .number()
       .required()
-      .equals([1.0], "schemaVersion must be specified as 1.0"
-      ),
+      .equals([1.0]),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D1,
   });
@@ -315,8 +314,7 @@ const componentYamlSchemaV1D1 = (srcDir) =>
     schemaVersion: yup
       .number()
       .required()
-      .equals([1.1], "schemaVersion must be specified as 1.1"
-      ),
+      .equals([1.1]),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D2,
   });

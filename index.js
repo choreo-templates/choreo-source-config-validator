@@ -62,28 +62,32 @@ function constructValidationErrorMessage(err, fileType) {
   return errorMsg + errorList;
 }
 
+async function validateComponentYaml(sourceRootDir, schemaVersion) {
+  switch (schemaVersion) {
+    case 1.0:
+      await componentYamlSchemaV1D0(sourceRootDir).validate(
+        srcConfigYamlFile,
+        { abortEarly: false }
+      );
+      break;
+    case 1.1:
+      await componentYamlSchemaV1D1(sourceRootDir).validate(
+        srcConfigYamlFile,
+        { abortEarly: false }
+      );
+      break;
+    default:
+      throw new Error(`SchemaVersion must be one of the following values: 1.0, 1.1`);
+  }
+}
+
 async function validateSourceConfigFile(sourceRootDir, fileType) {
   try {
     switch (fileType) {
       case sourceConfigFileTypes.COMPONENT_YAML:
-        const schemaVersion = config.schemaVersion;
-        if (schemaVersion == 1.0) {
-          await componentYamlSchemaV1D0(sourceRootDir).validate(
-            srcConfigYamlFile,
-            { abortEarly: false }
-          );
-          break;
-        }
-        else if (schemaVersion == 1.1) {
-          await componentYamlSchemaV1D1(sourceRootDir).validate(
-            srcConfigYamlFile,
-            { abortEarly: false }
-          );
-          break;
-        }
-        else {
-          throw new Error(`SchemaVersion must be one of the following values: 1.0, 1.1`);
-        }
+        const schemaVersion = srcConfigYamlFile.schemaVersion;
+        await validateComponentYaml(sourceRootDir, schemaVersion)
+        break;
       case sourceConfigFileTypes.COMPONENT_CONFIG_YAML:
         await componentConfigYamlSchemaV1beta1(sourceRootDir).validate(
           srcConfigYamlFile,
