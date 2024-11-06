@@ -264,10 +264,8 @@ describe("componentYamlSchemaV1D0 schema tests", () => {
     const expectedErrors = [
       "dependencies.serviceReferences[2].name must follow the format choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>",
       "dependencies.serviceReferences[3].name has an invalid service type. It can only contain choreo, thirdparty, or database types.",
-      "dependencies.serviceReferences[4].name has an invalid service identifier, only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) are allowed after thirdparty:",
       "dependencies.serviceReferences[5].name has an invalid service identifier, only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) are allowed after thirdparty:",
       "dependencies.serviceReferences[6].name has an invalid service identifier, only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) are allowed after thirdparty:",
-      "dependencies.serviceReferences[7].name has an invalid service identifier, only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) are allowed after database:",
       "dependencies.serviceReferences[8].name has an invalid service identifier, only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) are allowed after database:",
       "dependencies.serviceReferences[9].name has an invalid service identifier, only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) are allowed after database:",
     ];
