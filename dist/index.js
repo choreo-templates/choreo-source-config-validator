@@ -36201,7 +36201,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
           dbSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
             `Invalid service identifier in ${testCtx.path}. ` +
-              `Use the format database:[<databaseName>/]<serverName> with optional field in brackets, ` +
+              `Use the format database:[<databaseName>/]<serverName> where optional fields are in brackets, ` +
               `allowing only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) after database:.`
           )
         );
@@ -36232,7 +36232,7 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
           svcRefNameRegex.test(value) ||
           new yup.ValidationError(
             `Invalid service identifier in ${testCtx.path}. ` +
-              `Use the format [service:][/<project-handle>/]<component-handle>/<major-version>[/<endpoint-handle>][/<network-visibility>] with optional fields in brackets.`
+              `Use the format [service:][/<project-handle>/]<component-handle>/<major-version>[/<endpoint-handle>][/<network-visibility>] where optional fields are specified in brackets.`
           )
         )
       }
@@ -36251,7 +36251,7 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
           dbSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
             `Invalid service identifier in ${testCtx.path}. ` +
-              `Use the format database:[<databaseName>/]<serverName> with optional field in brackets, ` +
+              `Use the format database:[<databaseName>/]<serverName> where optional fields are in brackets, ` +
               `allowing only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) after database:.`
           )
         );
@@ -36264,7 +36264,7 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
               `For services, use [service:][/<project-handle>/]<component-handle>/<major-version>[/<endpoint-handle>][/<network-visibility>]. ` +
               `For databases, use database:[<databaseName>/]<serverName>. ` +
               `For third-party services, use thirdparty:<service_name>/<version>. ` +
-              `Specify optional fields in brackets.`
+              `Optional fields are specified in brackets.`
       ));
     },
   });
