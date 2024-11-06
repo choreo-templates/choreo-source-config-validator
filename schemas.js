@@ -90,7 +90,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         `^choreo:\/\/\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/v\\d+(\\.\\d+)?\/(PUBLIC|PROJECT|ORGANIZATION)$`
       );
       const thirdPartySvcRefNameRegex = new RegExp(
-        "^thirdparty:([a-zA-Z0-9_.\s\-]+)\/([vV]\d+(\.\d+)*)$"
+        "^thirdparty:([a-zA-Z0-9\\s_.-]+)\/([vV]\\d+(\\.\\d+)*)$"
       );
       const dbSvcRefNameRegex = new RegExp(
         "^database:(([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)$"
@@ -135,10 +135,10 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
     name: "validate-resource-ref",
     test: (value, testCtx) => {
          // [service:][/project-handle/]component-handle/major-version[/endpoint-handle][/network-visibility]
-      const svcRefNameRegex = new RegExp("^(service:)?(\/([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)\/([vV]\d+(\.\d+)*)(\/([a-zA-Z0-9_-]+))?(\/(PUBLIC|PROJECT|ORGANIZATION))?$"
+      const svcRefNameRegex = new RegExp("^(service:)?(\/([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)\/([vV]\\d+(\\.\\d+)*)(\/([a-zA-Z0-9_-]+))?(\/(PUBLIC|PROJECT|ORGANIZATION))?$"
       );
       const thirdPartySvcRefNameRegex = new RegExp(
-        "^thirdparty:([a-zA-Z0-9_.\s\-]+)\/([vV]\d+(\.\d+)*)$"
+        "^thirdparty:([a-zA-Z0-9\\s_.-]+)\/([vV]\\d+(\\.\\d+)*)$"
       );
       const dbSvcRefNameRegex = new RegExp(
         "^database:(([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)$"
