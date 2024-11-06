@@ -36216,9 +36216,8 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
   return this.test({
     name: "validate-resource-ref",
     test: (value, testCtx) => {
-      const svcRefNameRegex = new RegExp(
-        // [service:][/project-handle/]component-handle/major-version[/endpoint-handle][/network-visibility]
-        "^(service:)?(\/([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)\/([vV]\d+(\.\d+)*)(\/([a-zA-Z0-9_-]+))?(\/(PUBLIC|PROJECT|ORGANIZATION))?$"
+         // [service:][/project-handle/]component-handle/major-version[/endpoint-handle][/network-visibility]
+      const svcRefNameRegex = new RegExp("^(service:)?(\/([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)\/([vV]\d+(\.\d+)*)(\/([a-zA-Z0-9_-]+))?(\/(PUBLIC|PROJECT|ORGANIZATION))?$"
       );
       const thirdPartySvcRefNameRegex = new RegExp(
         "^thirdparty:([a-zA-Z0-9_.\s\-]+)\/([vV]\d+(\.\d+)*)$"
