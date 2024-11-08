@@ -4,7 +4,6 @@ const fs = require("fs");
 const path = require("path");
 
 // constants
-const ALLOWED_COMPONENT_YAML_VERSIONS = [1.0, 1.1];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
@@ -99,7 +98,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           choreoSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `Invalid service identifier in ${testCtx.path}. ` +
+            `${testCtx.path} has an invalid service identifier. ` +
               `Use the format choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
           )
         );
@@ -108,7 +107,7 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           thirdPartySvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `Invalid service identifier in ${testCtx.path}. ` +
+            `${testCtx.path} has an invalid service identifier. ` +
               `Use the format thirdparty:<service_name>/<version>, ` +
               `allowing only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) after thirdparty:.`
           )
@@ -118,14 +117,14 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           dbSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `Invalid service identifier in ${testCtx.path}. ` +
-              `Use the format database:[<databaseName>/]<serverName> where optional fields are in brackets, ` +
+            `${testCtx.path} has an invalid service identifier. ` +
+              `Use the format database:[<serverName>/]<databaseName> where optional fields are in brackets, ` +
               `allowing only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) after database:.`
           )
         );
       }
       return new yup.ValidationError(
-        `Invalid service identifier in ${testCtx.path}. It can only contain choreo, thirdparty, or database types.`
+        `${testCtx.path} has an invalid service identifier. It can only contain choreo, thirdparty, or database types.`
       );
     },
   });
@@ -149,7 +148,7 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
         return (
           svcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `Invalid service identifier in ${testCtx.path}. ` +
+            `${testCtx.path} has an invalid service identifier. ` +
               `Use the format [service:][/<project-handle>/]<component-handle>/<major-version>[/<endpoint-handle>][/<network-visibility>] where optional fields are specified in brackets.`
           )
         )
@@ -158,7 +157,7 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
         return (
           thirdPartySvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `Invalid service identifier in ${testCtx.path}. ` +
+            `${testCtx.path} has an invalid service identifier. ` +
               `Use the format thirdparty:<service_name>/<version>, ` +
               `allowing only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) after thirdparty:.`
           )
@@ -168,8 +167,8 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
         return (
           dbSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `Invalid service identifier in ${testCtx.path}. ` +
-              `Use the format database:[<databaseName>/]<serverName> where optional fields are in brackets, ` +
+            `${testCtx.path} has an invalid service identifier. ` +
+              `Use the format database:[<serverName>/]<databaseName> where optional fields are in brackets, ` +
               `allowing only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) after database:.`
           )
         );
@@ -178,9 +177,9 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
         // since "service:" is optional, we need to validate again with a generic error
         svcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `Invalid service identifier in ${testCtx.path}. ` +
+            `${testCtx.path} has an invalid service identifier. ` +
               `For services, use [service:][/<project-handle>/]<component-handle>/<major-version>[/<endpoint-handle>][/<network-visibility>]. ` +
-              `For databases, use database:[<databaseName>/]<serverName>. ` +
+              `For databases, use database:[<serverName>/]<databaseName>. ` +
               `For third-party services, use thirdparty:<service_name>/<version>. ` +
               `Optional fields are specified in brackets.`
       ));
@@ -272,9 +271,9 @@ const serviceReferencesSchema = yup.array().of(
 const connectionReferencesSchema = yup.array().of(
   yup.object().shape({
     name: yup.string().required().matches(
-      /^([a-zA-Z0-9_.\s\-]+)$/,
+      /^[\s]*(?!.*[^a-zA-Z0-9][^a-zA-Z0-9])[a-zA-Z0-9][a-zA-Z0-9 _\-.]{1,48}[a-zA-Z0-9][\s]*$/,
       ({ path }) =>
-        `${path} can only contain alphanumeric characters, underscores (_), hyphens (-), periods (.) and spaces ( ).`
+        `${path} can only contain letters, numbers, with non-consecutive delimiters: underscores (_), hyphens (-), dots (.), or spaces.`
     ),
     resourceRef: yup.string().required().validateResourceRef(),
   })
@@ -304,7 +303,7 @@ const componentYamlSchemaV1D0 = (srcDir) =>
     schemaVersion: yup
       .number()
       .required()
-      .equals([1.0]),
+      .oneOf([1.0], 'Schema version must be 1.0'),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D1,
   });
@@ -315,7 +314,7 @@ const componentYamlSchemaV1D1 = (srcDir) =>
     schemaVersion: yup
       .number()
       .required()
-      .equals([1.1]),
+      .oneOf([1.1], 'Schema version must be 1.1'),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D2,
   });
