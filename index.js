@@ -3,6 +3,7 @@ const fs = require("fs");
 const yaml = require("js-yaml");
 const path = require("path");
 const {
+  componentYamlSchemaV1D1,
   componentYamlSchemaV1D0,
   endpointYamlSchemaV0D1,
   componentConfigYamlSchemaV1beta1,
@@ -61,14 +62,31 @@ function constructValidationErrorMessage(err, fileType) {
   return errorMsg + errorList;
 }
 
+async function validateComponentYaml(sourceRootDir, schemaVersion) {
+  switch (schemaVersion) {
+    case 1.0:
+      await componentYamlSchemaV1D0(sourceRootDir).validate(
+        srcConfigYamlFile,
+        { abortEarly: false }
+      );
+      break;
+    case 1.1:
+      await componentYamlSchemaV1D1(sourceRootDir).validate(
+        srcConfigYamlFile,
+        { abortEarly: false }
+      );
+      break;
+    default:
+      throw new Error(`SchemaVersion must be one of the following values: 1.0, 1.1`);
+  }
+}
+
 async function validateSourceConfigFile(sourceRootDir, fileType) {
   try {
     switch (fileType) {
       case sourceConfigFileTypes.COMPONENT_YAML:
-        await componentYamlSchemaV1D0(sourceRootDir).validate(
-          srcConfigYamlFile,
-          { abortEarly: false }
-        );
+        const schemaVersion = srcConfigYamlFile.schemaVersion;
+        await validateComponentYaml(sourceRootDir, schemaVersion)
         break;
       case sourceConfigFileTypes.COMPONENT_CONFIG_YAML:
         await componentConfigYamlSchemaV1beta1(sourceRootDir).validate(

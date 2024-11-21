@@ -4,7 +4,6 @@ const fs = require("fs");
 const path = require("path");
 
 // constants
-const ALLOWED_COMPONENT_YAML_VERSIONS = [1.0, 1.1];
 const ALLOWED_TYPES = ["REST", "GraphQL", "GRPC", "TCP", "UDP", "WS"];
 const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
@@ -90,16 +89,17 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         `^choreo:\/\/\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/${alphanumericRegex}\/v\\d+(\\.\\d+)?\/(PUBLIC|PROJECT|ORGANIZATION)$`
       );
       const thirdPartySvcRefNameRegex = new RegExp(
-        "^thirdparty:[a-zA-Z0-9._/-]+$"
+        "^thirdparty:([a-zA-Z0-9\\s_.-]+)\/([vV]\\d+(\\.\\d+)*)$"
       );
-      const dbSvcRefNameRegex = new RegExp("^database:[a-zA-Z0-9_/-]+$");
-
+      const dbSvcRefNameRegex = new RegExp(
+        "^database:(([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)$"
+      );
       if (value.startsWith("choreo:///")) {
         return (
           choreoSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx.path} must follow the format ` +
-              `choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
+            `${testCtx.path} has an invalid service identifier. ` +
+              `Use the format choreo:///<org-handle>/<project-handle>/<component-handle>/<endpoint-identifier>/<major-version>/<network-visibility>`
           )
         );
       }
@@ -107,8 +107,9 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           thirdPartySvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx.path} has an invalid service identifier, ` +
-              `only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) are allowed after thirdparty:`
+            `${testCtx.path} has an invalid service identifier. ` +
+              `Use the format thirdparty:<service_name>/<version>, ` +
+              `allowing only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) after thirdparty:.`
           )
         );
       }
@@ -116,14 +117,72 @@ yup.addMethod(yup.string, "validateServiceName", function () {
         return (
           dbSvcRefNameRegex.test(value) ||
           new yup.ValidationError(
-            `${testCtx.path} has an invalid service identifier, ` +
-              `only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) are allowed after database:`
+            `${testCtx.path} has an invalid service identifier. ` +
+              `Use the format database:[<serverName>/]<databaseName> where optional fields are in brackets, ` +
+              `allowing only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) after database:.`
           )
         );
       }
       return new yup.ValidationError(
-        `${testCtx.path} has an invalid service type. It can only contain choreo, thirdparty, or database types.`
+        `${testCtx.path} has an invalid service identifier. It can only contain choreo, thirdparty, or database types.`
       );
+    },
+  });
+});
+
+// validateResourceRef - Custom validation method to validate resourceRef of connectionReferences
+yup.addMethod(yup.string, "validateResourceRef", function () {
+  return this.test({
+    name: "validate-resource-ref",
+    test: (value, testCtx) => {
+         // [service:][/project-handle/]component-handle/major-version[/endpoint-handle][/network-visibility]
+      const svcRefNameRegex = new RegExp("^(service:)?(\/([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)\/([vV]\\d+(\\.\\d+)*)(\/([a-zA-Z0-9_-]+))?(\/(PUBLIC|PROJECT|ORGANIZATION))?$"
+      );
+      const thirdPartySvcRefNameRegex = new RegExp(
+        "^thirdparty:([a-zA-Z0-9\\s_.-]+)\/([vV]\\d+(\\.\\d+)*)$"
+      );
+      const dbSvcRefNameRegex = new RegExp(
+        "^database:(([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)$"
+      );
+      if (value.startsWith("service:")) {
+        return (
+          svcRefNameRegex.test(value) ||
+          new yup.ValidationError(
+            `${testCtx.path} has an invalid service identifier. ` +
+              `Use the format [service:][/<project-handle>/]<component-handle>/<major-version>[/<endpoint-handle>][/<network-visibility>] where optional fields are specified in brackets.`
+          )
+        )
+      }
+      if (value.startsWith("thirdparty:")) {
+        return (
+          thirdPartySvcRefNameRegex.test(value) ||
+          new yup.ValidationError(
+            `${testCtx.path} has an invalid service identifier. ` +
+              `Use the format thirdparty:<service_name>/<version>, ` +
+              `allowing only alphanumeric characters, periods (.), underscores (_), hyphens (-), and slashes (/) after thirdparty:.`
+          )
+        );
+      }
+      if (value.startsWith("database:")) {
+        return (
+          dbSvcRefNameRegex.test(value) ||
+          new yup.ValidationError(
+            `${testCtx.path} has an invalid service identifier. ` +
+              `Use the format database:[<serverName>/]<databaseName> where optional fields are in brackets, ` +
+              `allowing only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) after database:.`
+          )
+        );
+      }
+      return (
+        // since "service:" is optional, we need to validate again with a generic error
+        svcRefNameRegex.test(value) ||
+          new yup.ValidationError(
+            `${testCtx.path} has an invalid service identifier. ` +
+              `For services, use [service:][/<project-handle>/]<component-handle>/<major-version>[/<endpoint-handle>][/<network-visibility>]. ` +
+              `For databases, use database:[<serverName>/]<databaseName>. ` +
+              `For third-party services, use thirdparty:<service_name>/<version>. ` +
+              `Optional fields are specified in brackets.`
+      ));
     },
   });
 });
@@ -208,9 +267,27 @@ const serviceReferencesSchema = yup.array().of(
   })
 );
 
+// connectionReferencesSchema - Schema for connection references
+const connectionReferencesSchema = yup.array().of(
+  yup.object().shape({
+    name: yup.string().required().matches(
+      /^[\s]*(?!.*[^a-zA-Z0-9][^a-zA-Z0-9])[a-zA-Z0-9][a-zA-Z0-9 _\-.]{1,48}[a-zA-Z0-9][\s]*$/,
+      ({ path }) =>
+        `${path} can only contain letters, numbers, with non-consecutive delimiters: underscores (_), hyphens (-), dots (.), or spaces.`
+    ),
+    resourceRef: yup.string().required().validateResourceRef(),
+  })
+);
+
 // dependencySchemaV0D1 - Schema for dependency definition V0.1
 const dependencySchemaV0D1 = yup.object().shape({
   serviceReferences: serviceReferencesSchema,
+});
+
+// dependencySchemaV0D2 - Schema for dependency definition V0.2
+const dependencySchemaV0D2 = yup.object().shape({
+  serviceReferences: serviceReferencesSchema,
+  connectionReferences: connectionReferencesSchema,
 });
 
 // specSchema - Schema for spec definition
@@ -220,18 +297,26 @@ const specSchema = (srcDir) =>
     outbound: dependencySchemaV0D1,
   });
 
-// componentYamlSchema - Schema for component.yaml
+// componentYamlSchemaV1D0 - Schema for component.yaml v1.0
 const componentYamlSchemaV1D0 = (srcDir) =>
   yup.object().shape({
     schemaVersion: yup
       .number()
       .required()
-      .oneOf(
-        ALLOWED_COMPONENT_YAML_VERSIONS,
-        "schemaVersion must be one of the following values: 1.0, 1.1"
-      ),
+      .oneOf([1.0], 'Schema version must be 1.0'),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D1,
+  });
+
+// componentYamlSchemaV1D1 - Schema for component.yaml v1.1
+const componentYamlSchemaV1D1 = (srcDir) =>
+  yup.object().shape({
+    schemaVersion: yup
+      .number()
+      .required()
+      .oneOf([1.1], 'Schema version must be 1.1'),
+    endpoints: endpointSchemaV0D2(srcDir),
+    dependencies: dependencySchemaV0D2,
   });
 
 // endpointYamlSchema - Schema for endpoints.yaml
@@ -253,6 +338,7 @@ const componentConfigYamlSchemaV1beta1 = (srcDir) =>
   });
 
 module.exports = {
+  componentYamlSchemaV1D1,
   componentYamlSchemaV1D0,
   endpointYamlSchemaV0D1,
   componentConfigYamlSchemaV1beta1,

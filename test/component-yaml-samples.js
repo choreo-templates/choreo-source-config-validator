@@ -236,7 +236,7 @@ dependencies:
         env:
           - from: ServiceURL
             to: SERVICE_URL
-      - name: thirdparty:service.name/endpoint_123/instance-1
+      - name: thirdparty:service name_test-v1.1/v1.1
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
@@ -251,7 +251,7 @@ dependencies:
         env:
           - from: ServiceURL
             to: SERVICE_URL
-      - name: database:my_database/service-123/instance_1
+      - name: database:my_database-1/service-123
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
@@ -299,6 +299,72 @@ dependencies:
         env:
           - to: SERVICE_URL`;
 
+const validateConnectionReferenceName = `schemaVersion: 1.1
+dependencies:
+    connectionReferences:
+      - name:
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: valid_connection_name
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: invalid__connection_name
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: valid connection name-v1.1
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: invalid connection name-v1.1.
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: Valid Connection Name 
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: Invalid Connection Name_ 
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC`
+
+const validateConnectionReferenceResourceRef = `schemaVersion: 1.1
+dependencies:
+    connectionReferences:
+      - name: valid_connection_name1
+        resourceRef: 
+      - name: valid_connection_name0
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC 
+      - name: valid_connection_name1
+        resourceRef: service:mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: valid_connection_name1
+        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PRIVATE
+      - name: valid_connection_name0
+        resourceRef: /mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: valid_connection_name1
+        resourceRef: mttm/mmvhxd/v1.1/ad088/PUBLIC
+      - name: valid_connection_name0
+        resourceRef: mmvhxd/v1.1/ad088/PUBLIC
+      - name: valid_connection_name0
+        resourceRef: mmvhxd/v1.1/PUBLIC
+      - name: valid_connection_name0
+        resourceRef: mmvhxd/v1.1/ad088
+      - name: valid_connection_name1
+        resourceRef: mmvhxd/v1.1/ad088/
+      - name: valid_connection_name0
+        resourceRef: mmvhxd/v1.1
+      - name: valid_connection_name1
+        resourceRef: mmvhxd/v1.1/
+      - name: valid_connection_name0
+        resourceRef: /mmtm/mmvhxd/v1.1
+      - name: valid_connection_name0 
+        resourceRef: thirdparty:mttm/v1.1
+      - name: valid_connection_name1
+        resourceRef: thirdparty:mttm/v1.1/invalid
+      - name: valid_connection_name1
+        resourceRef: thirdparty:v1.1
+      - name: valid_connection_name1
+        resourceRef: thirdparty:mmtm/
+      - name: valid_connection_name0
+        resourceRef: database:mySqlDbServer/hotelDb
+      - name: valid_connection_name1
+        resourceRef: database:mySqlDbServerV1.1/hotelDb
+      - name: valid_connection_name1
+        resourceRef: database:mySqlDbServer/hotelDb/invalid
+      - name: valid_connection_name1
+        resourceRef: database:/mySqlDbServer/hotelDb
+      - name: valid_connection_name1
+        resourceRef: THIRDPARTY:mySqlDbServer/hotelDb/invalid`
+
 module.exports = {
   validComponentYaml,
   missingRequiredFieldsComponentYaml,
@@ -311,4 +377,6 @@ module.exports = {
   validateServiceReferenceName,
   validateServiceReferenceConnectionConfig,
   validateServiceReferenceEnv,
+  validateConnectionReferenceName,
+  validateConnectionReferenceResourceRef,
 };
