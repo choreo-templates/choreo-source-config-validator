@@ -216,63 +216,51 @@ endpoints:
 const validateServiceReferenceName = `schemaVersion: 1.0
 dependencies:
     serviceReferences:
-    #0
       - name: choreo:///apifirst/mttm/mmvhxd/ad088/v1.0/PUBLIC
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-    #1
       - name: choreo:///user123/project456/service789/instance000/v2.3/PROJECT
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-    #2
       - name: choreo:///service_name/project_name/component_name/instance_name/v1/PRIVATE
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-    #3
       - name: choreo://service_name/project_name/component_name/instance_name/v1/PUBLIC
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-
-    #4: check for valid tp name here:
       - name: thirdparty:service name_test-v1.1/v1.1
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-    #5
       - name: thirdparty:some-service_v1.0/path/to/resource
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-    #6
       - name: thirdparty:service*name
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-
-    #7: check for valid db name here:
       - name: database:my_database-1/service-123
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-    #8
       - name: database:service*name
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
           - from: ServiceURL
             to: SERVICE_URL
-    #9
       - name: database:my_database.com/service-123/instance_1
         connectionConfig: 19d2648b-d29c-4452-afdd-1b9311e81412
         env:
