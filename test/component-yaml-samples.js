@@ -1,4 +1,4 @@
-const validComponentYaml = `schemaVersion: 1.0
+const validComponentYaml = `schemaVersion: "1.0"
 endpoints:
   - name: greeter-sample
     displayName: Go Greeter Sample
