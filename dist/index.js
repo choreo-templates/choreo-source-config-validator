@@ -36091,6 +36091,8 @@ const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
 const COMPONENT_CONFIG_YAML_API_VERSION = ["core.choreo.dev/v1beta1"];
 const COMPONENT_CONFIG_YAML_KIND = ["ComponentConfig"];
+const LATEST_COMPONENT_YAML_SCHEMA_VERSION = 1.1;
+
 // custom validators
 // checkEndpointNameUniqueness - Custom validation method to check if endpoint names are unique
 yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
@@ -36424,6 +36426,7 @@ module.exports = {
   componentYamlSchemaV1D0,
   endpointYamlSchemaV0D1,
   componentConfigYamlSchemaV1beta1,
+  LATEST_COMPONENT_YAML_SCHEMA_VERSION
 };
 
 
@@ -38328,11 +38331,30 @@ const {
   componentYamlSchemaV1D0,
   endpointYamlSchemaV0D1,
   componentConfigYamlSchemaV1beta1,
+  LATEST_COMPONENT_YAML_SCHEMA_VERSION,
 } = __nccwpck_require__(1677);
 const { sourceConfigFileTypes, errCodes } = __nccwpck_require__(5376);
 
-const olderSrcConfigMessage =
-  "OUTDATED SOURCE CONFIG: You are using an older version of the source configuration. Please update to the latest version to take advantage of new features.";
+function showOlderSrcConfigDetectedMessage(fileType, componentYamlVersion) {
+  if (
+    fileType === sourceConfigFileTypes.COMPONENT_CONFIG_YAML ||
+    fileType === sourceConfigFileTypes.ENDPOINT_YAML
+  ) {
+    core.warning(
+      `OUTDATED SOURCE CONFIG: You are using an older version (${fileType}) of the source configuration file. Update to the latest version to benefit from new features and improvements.`
+    );
+    return;
+  }
+  if (fileType === sourceConfigFileTypes.COMPONENT_YAML) {
+    parsedComponentYamlVersion = Number(componentYamlVersion);
+    if (parsedComponentYamlVersion < LATEST_COMPONENT_YAML_SCHEMA_VERSION) {
+      core.warning(
+        `OUTDATED SOURCE CONFIG: You are using an older version of the component.yaml ${componentYamlVersion}. Update to the latest version to benefit from new features and improvements.`
+      );
+      return;
+    }
+  }
+}
 
 function readInput() {
   sourceRootDir = core.getInput("source-root-dir-path");
@@ -38408,20 +38430,23 @@ async function validateComponentYaml(sourceRootDir, schemaVersion) {
 
 async function validateSourceConfigFile(sourceRootDir, fileType) {
   try {
+    // Need to show a warning message if the source config file is outdated
+    showOlderSrcConfigDetectedMessage(
+      fileType,
+      srcConfigYamlFile.schemaVersion || null
+    );
     switch (fileType) {
       case sourceConfigFileTypes.COMPONENT_YAML:
         const schemaVersion = srcConfigYamlFile.schemaVersion;
         await validateComponentYaml(sourceRootDir, schemaVersion);
         break;
       case sourceConfigFileTypes.COMPONENT_CONFIG_YAML:
-        core.warning(olderSrcConfigMessage);
         await componentConfigYamlSchemaV1beta1(sourceRootDir).validate(
           srcConfigYamlFile,
           { abortEarly: false }
         );
         break;
       case sourceConfigFileTypes.ENDPOINT_YAML:
-        core.warning(olderSrcConfigMessage);
         await endpointYamlSchemaV0D1(sourceRootDir).validate(
           srcConfigYamlFile,
           { abortEarly: false }
