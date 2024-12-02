@@ -38341,7 +38341,7 @@ function showOlderSrcConfigDetectedMessage(fileType, componentYamlVersion) {
     fileType === sourceConfigFileTypes.ENDPOINT_YAML
   ) {
     core.warning(
-      `OUTDATED SOURCE CONFIG: You are using an older version (${fileType}) of the source configuration file. Update to the latest version to benefit from new features and improvements.`
+      `OUTDATED SOURCE CONFIG: You are using ${fileType}, which is an outdated source configuration file. Update to "component.yaml v${LATEST_COMPONENT_YAML_SCHEMA_VERSION}" to benefit from new features and improvements.`
     );
     return;
   }
@@ -38349,7 +38349,7 @@ function showOlderSrcConfigDetectedMessage(fileType, componentYamlVersion) {
     parsedComponentYamlVersion = Number(componentYamlVersion);
     if (parsedComponentYamlVersion < LATEST_COMPONENT_YAML_SCHEMA_VERSION) {
       core.warning(
-        `OUTDATED SOURCE CONFIG: You are using an older version of the component.yaml ${componentYamlVersion}. Update to the latest version to benefit from new features and improvements.`
+        `OUTDATED SOURCE CONFIG:You are using component.yaml v${parsedComponentYamlVersion}, which is an outdated source configuration file. Update to "component.yaml v${LATEST_COMPONENT_YAML_SCHEMA_VERSION}" to benefit from new features and improvements.`
       );
       return;
     }
