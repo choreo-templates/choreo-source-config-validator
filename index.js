@@ -25,7 +25,7 @@ function showOlderSrcConfigDetectedMessage(fileType, componentYamlVersion) {
     parsedComponentYamlVersion = Number(componentYamlVersion);
     if (parsedComponentYamlVersion < LATEST_COMPONENT_YAML_SCHEMA_VERSION) {
       core.warning(
-        `OUTDATED SOURCE CONFIG:You are using component.yaml v${parsedComponentYamlVersion}, which is an outdated source configuration file. Update to "component.yaml v${LATEST_COMPONENT_YAML_SCHEMA_VERSION}" to benefit from new features and improvements.`
+        `OUTDATED SOURCE CONFIG: You are using component.yaml v${parsedComponentYamlVersion}, which is an outdated source configuration file. Update to "component.yaml v${LATEST_COMPONENT_YAML_SCHEMA_VERSION}" to benefit from new features and improvements.`
       );
       return;
     }
