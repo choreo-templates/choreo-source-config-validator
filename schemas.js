@@ -9,6 +9,8 @@ const ALLOWED_NETWORK_VISIBILITIES = ["Public", "Project", "Organization"];
 const BASE_PATH_REQUIRED_TYPES = ["REST", "GraphQL", "WS"];
 const COMPONENT_CONFIG_YAML_API_VERSION = ["core.choreo.dev/v1beta1"];
 const COMPONENT_CONFIG_YAML_KIND = ["ComponentConfig"];
+const LATEST_COMPONENT_YAML_SCHEMA_VERSION = 1.1;
+
 // custom validators
 // checkEndpointNameUniqueness - Custom validation method to check if endpoint names are unique
 yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
@@ -342,4 +344,5 @@ module.exports = {
   componentYamlSchemaV1D0,
   endpointYamlSchemaV0D1,
   componentConfigYamlSchemaV1beta1,
+  LATEST_COMPONENT_YAML_SCHEMA_VERSION
 };

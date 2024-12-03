@@ -7,8 +7,30 @@ const {
   componentYamlSchemaV1D0,
   endpointYamlSchemaV0D1,
   componentConfigYamlSchemaV1beta1,
+  LATEST_COMPONENT_YAML_SCHEMA_VERSION,
 } = require("./schemas");
 const { sourceConfigFileTypes, errCodes } = require("./enums");
+
+function showOlderSrcConfigDetectedMessage(fileType, componentYamlVersion) {
+  if (
+    fileType === sourceConfigFileTypes.COMPONENT_CONFIG_YAML ||
+    fileType === sourceConfigFileTypes.ENDPOINT_YAML
+  ) {
+    core.warning(
+      `OUTDATED SOURCE CONFIG: You are using ${fileType}, which is an outdated source configuration file. Update to "component.yaml v${LATEST_COMPONENT_YAML_SCHEMA_VERSION}" to benefit from new features and improvements.`
+    );
+    return;
+  }
+  if (fileType === sourceConfigFileTypes.COMPONENT_YAML) {
+    parsedComponentYamlVersion = Number(componentYamlVersion);
+    if (parsedComponentYamlVersion < LATEST_COMPONENT_YAML_SCHEMA_VERSION) {
+      core.warning(
+        `OUTDATED SOURCE CONFIG: You are using component.yaml v${parsedComponentYamlVersion}, which is an outdated source configuration file. Update to "component.yaml v${LATEST_COMPONENT_YAML_SCHEMA_VERSION}" to benefit from new features and improvements.`
+      );
+      return;
+    }
+  }
+}
 
 function readInput() {
   sourceRootDir = core.getInput("source-root-dir-path");
@@ -84,6 +106,11 @@ async function validateComponentYaml(sourceRootDir, schemaVersion) {
 
 async function validateSourceConfigFile(sourceRootDir, fileType) {
   try {
+    // Need to show a warning message if the source config file is outdated
+    showOlderSrcConfigDetectedMessage(
+      fileType,
+      srcConfigYamlFile.schemaVersion || null
+    );
     switch (fileType) {
       case sourceConfigFileTypes.COMPONENT_YAML:
         const schemaVersion = srcConfigYamlFile.schemaVersion;
