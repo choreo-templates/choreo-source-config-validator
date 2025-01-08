@@ -37,6 +37,31 @@ yup.addMethod(yup.array, "checkEndpointNameUniqueness", function () {
   });
 });
 
+// check envVariableUniqueness - Custom validation method to check if env variable names are unique
+yup.addMethod(yup.array, "checkEnvVariableUniqueness", function () {
+  return this.test({
+    name: "unique-env-variable-name",
+    test: (arr) => {
+      // the env section is optional, hence return true if it is not present
+      if (!arr) {
+        return true;
+      }
+      const envSet = new Set();
+      const isUnique = arr.every((env) => {
+        envName = env.name;
+        if (envSet.has(envName)) {
+          return false;
+        }
+        envSet.add(envName);
+        return true;
+      });
+      return (
+        isUnique || new yup.ValidationError("Environment variable names must be unique")
+      );
+    },
+  });
+});
+
 // contextRequired - Custom validation method to check context is required for REST, GraphQL, and WS endpoints
 yup.addMethod(yup.string, "contextRequired", function () {
   return this.test({
@@ -292,6 +317,37 @@ const dependencySchemaV0D2 = yup.object().shape({
   connectionReferences: connectionReferencesSchema,
 });
 
+const connectionRefSchema = yup.object().shape({
+  name: yup.string().required(),
+  key: yup.string().required(),
+}).nullable().default(null);
+
+const configGroupRefSchema = yup.object().shape({
+  name: yup.string().required(),
+  key: yup.string().required(),
+}).nullable().default(null);
+
+const envVariableSchema = yup.object().shape({
+  name: yup.string().required(),
+  value: yup.string(),
+  valueFrom: yup
+    .object()
+    .shape({
+      connectionRef: connectionRefSchema,
+      configGroupRef: configGroupRefSchema,
+    }),
+}).test(
+  "oneOfRequired",
+  "One of value, connectionRef or configGroupRef must be provided",
+  function (envVariable) {
+    return envVariable?.value || envVariable?.valueFrom?.configGroupRef || envVariable?.valueFrom?.connectionRef;
+  }
+);
+
+const configurationSchema = yup.object().shape({
+  env: yup.array().of(envVariableSchema).checkEnvVariableUniqueness(),
+});
+
 // specSchema - Schema for spec definition
 const specSchema = (srcDir) =>
   yup.object().shape({
@@ -319,6 +375,7 @@ const componentYamlSchemaV1D1 = (srcDir) =>
       .oneOf([1.1], 'Schema version must be 1.1'),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D2,
+    configuration: configurationSchema,
   });
 
 // endpointYamlSchema - Schema for endpoints.yaml
