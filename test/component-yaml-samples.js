@@ -18,6 +18,42 @@ dependencies:
           - from: ServiceURL
             to: SERVICE_URL`;
 
+const validComponentYamlV1D1 = `schemaVersion: 1.1
+endpoints:
+  - name: greeter-sample
+    displayName: Go Greeter Sample
+    service:
+      basePath: /greeting-service
+      port: 9090
+    type: REST
+    networkVisibilities: 
+      - Public
+      - Organization
+    schemaFilePath: dummy-openapi.yaml
+dependencies:
+  connectionReferences:
+    - name: hello-conn
+      resourceRef: service:/connkeysrotation/hello-svc-4-12-2024/v1/803f0/PUBLIC
+configuration:
+  env:
+    - name: HELLO_SERVICE_URL
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ServiceURL
+    - name: HELLO_SERVICE_API_KEY
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ChoreoAPIKey
+    - name: CONFIG_GRP_VAR
+      valueFrom:
+        configGroupRef:
+          name: hello-config-group
+          key: config-key
+    - name: CUSTOM_VAR
+      value: custom-value`;
+
 const missingRequiredFieldsComponentYaml = `
 endpoints:
   - displayName: Go Greeter Sample`;
@@ -365,6 +401,37 @@ dependencies:
       - name: valid_connection_name1
         resourceRef: THIRDPARTY:mySqlDbServer/hotelDb/invalid`
 
+const validateConfigurations = `schemaVersion: 1.1
+configuration:
+  env:
+    - name: HELLO_SERVICE_URL
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+    - name: HELLO_SERVICE_API_KEY
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ChoreoAPIKey
+    - name: HELLO_SERVICE_API_KEY
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ConsumerSecret
+    - name: HELLO_SERVICE_CONSUMER_KEY
+      valueFrom: 
+        name: hello-conn
+        key: ConsumerKey
+    - name: HELLO_SERVICE_TOKEN_URL
+      valueFrom: 
+        connectionRef:
+          key: TokenURL
+    - name: CONFIG_GRP_VAR
+      valueFrom: 
+        configGroupRef:
+          name: hello-conn
+    - name: CUSTOM_VAR`
+
 module.exports = {
   validComponentYaml,
   missingRequiredFieldsComponentYaml,
@@ -379,4 +446,6 @@ module.exports = {
   validateServiceReferenceEnv,
   validateConnectionReferenceName,
   validateConnectionReferenceResourceRef,
+  validateConfigurations,
+  validComponentYamlV1D1,
 };
