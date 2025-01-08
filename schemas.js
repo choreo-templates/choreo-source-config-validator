@@ -328,7 +328,9 @@ const configGroupRefSchema = yup.object().shape({
 }).nullable().default(null);
 
 const envVariableSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: yup.string().required().matches(
+    /^[a-zA-Z_][a-zA-Z0-9_]*$/,
+    "Environment variable name must start with a letter or underscore and can only contain letters, numbers, and underscores."),
   value: yup.string(),
   valueFrom: yup
     .object()
