@@ -430,7 +430,9 @@ configuration:
       valueFrom: 
         configGroupRef:
           name: hello-conn
-    - name: CUSTOM_VAR`
+    - name: CUSTOM_VAR
+    - name: INVALID VAR
+      value: custom-value`
 
 module.exports = {
   validComponentYaml,
