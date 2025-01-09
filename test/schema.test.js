@@ -29,6 +29,8 @@ const {
   validateServiceReferenceEnv,
   validateConnectionReferenceName,
   validateConnectionReferenceResourceRef,
+  validateConfigurations,
+  validComponentYamlV1D1,
 } = require("./component-yaml-samples.js");
 
 const testSrcDir = "test/";
@@ -355,3 +357,30 @@ describe("dependencySchemaV0D2 schema tests", () => {
     );
   });
 })
+
+describe("componentYamlSchemaV1D1 schema tests", () => {
+  test("should validate correctly with valid component.yaml v1.1", async () => {
+    const result = await validateComponentYamlSchema(
+      validComponentYamlV1D1,
+      ALLOWED_COMPONENT_YAML_VERSIONS[1]
+    );
+    expect(result).toBeDefined();
+  });
+  test("should fail when configuration is not valid", async () => {
+    const expectedErrors = [
+      "configuration.env[0].valueFrom.connectionRef.key is a required field",
+      "One of value, connectionRef or configGroupRef must be provided",
+      "configuration.env[4].valueFrom.connectionRef.name is a required field",
+      "configuration.env[5].valueFrom.configGroupRef.key is a required field",
+      "One of value, connectionRef or configGroupRef must be provided",
+      "Environment variable name must start with a letter or underscore and can only contain letters, numbers, and underscores.",
+      "Environment variable names must be unique",
+    ];
+    await expectValidationErrors(
+      COMPONENT_YAML,
+      validateConfigurations,
+      expectedErrors,
+      ALLOWED_COMPONENT_YAML_VERSIONS[1]
+    );
+  });
+});
