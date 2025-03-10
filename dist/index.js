@@ -36476,9 +36476,9 @@ const envVariableSchemaV0D2 = yup.object().shape({
     }),
 }).test(
   "oneOfRequired",
-  "One of value, connectionRef or configGroupRef must be provided",
+  "One of value, connectionRef, configGroupRef  or configForm must be provided",
   function (envVariable) {
-    return envVariable?.value || envVariable?.valueFrom?.configGroupRef || envVariable?.valueFrom?.connectionRef;
+    return envVariable?.value || envVariable?.valueFrom?.configGroupRef || envVariable?.valueFrom?.connectionRef || envVariable?.valueFrom?.configForm ;
   }
 );
 
@@ -36530,7 +36530,7 @@ const componentYamlSchemaV1D2 = (srcDir) =>
     schemaVersion: yup
       .number()
       .required()
-      .oneOf([1.1], "Schema version must be 1.2"),
+      .oneOf([1.2], "Schema version must be 1.2"),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D2,
     configuration: configurationSchemaV0D2,

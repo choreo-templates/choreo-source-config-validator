@@ -448,7 +448,7 @@ const componentYamlSchemaV1D2 = (srcDir) =>
     schemaVersion: yup
       .number()
       .required()
-      .oneOf([1.1], "Schema version must be 1.2"),
+      .oneOf([1.2], "Schema version must be 1.2"),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D2,
     configuration: configurationSchemaV0D2,
