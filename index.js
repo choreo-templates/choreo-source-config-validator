@@ -102,6 +102,7 @@ async function validateComponentYaml(sourceRootDir, schemaVersion) {
       await componentYamlSchemaV1D2(sourceRootDir).validate(srcConfigYamlFile, {
         abortEarly: false,
       });
+      break;
     default:
       throw new Error(
         `SchemaVersion must be one of the following values: 1.0, 1.1`
