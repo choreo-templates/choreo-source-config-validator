@@ -511,7 +511,18 @@ configuration:
           name: hello-conn
     - name: CUSTOM_VAR
     - name: INVALID VAR
-      value: custom-value`;
+      value: custom-value
+configurations:
+  env:
+    - name: HELLO_SERVICE_URL
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+    - name: HELLO_SERVICE_API_KEY
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ChoreoAPIKey`;
 
 module.exports = {
   validComponentYaml,
