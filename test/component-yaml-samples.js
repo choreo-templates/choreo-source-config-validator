@@ -54,6 +54,69 @@ configuration:
     - name: CUSTOM_VAR
       value: custom-value`;
 
+const validComponentYamlV1D2 = `schemaVersion: 1.2
+endpoints:
+  - name: greeter-sample
+    displayName: Go Greeter Sample
+    service:
+      basePath: /greeting-service
+      port: 9090
+    type: REST
+    networkVisibilities: 
+      - Public
+      - Organization
+    schemaFilePath: dummy-openapi.yaml
+dependencies:
+  connectionReferences:
+    - name: hello-conn
+      resourceRef: service:/connkeysrotation/hello-svc-4-12-2024/v1/803f0/PUBLIC
+configurations:
+  env:
+    - name: HELLO_SERVICE_URL
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ServiceURL
+    - name: HELLO_SERVICE_API_KEY
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ChoreoAPIKey
+    - name: CONFIG_GRP_VAR
+      valueFrom:
+        configGroupRef:
+          name: hello-config-group
+          key: config-key
+    - name: CUSTOM_VAR
+      value: custom-value
+    - name: REDIS_URL
+      valueFrom:
+        configForm: {}
+    - name: DB_USER
+      valueFrom:
+        configForm:
+          displayName: DB User
+          required: false
+  file:
+    - name: application.yaml
+      mountPath: /src/resources
+      type: yaml
+      values:
+        - name: logging
+          valueFrom:
+            configForm:
+              displayName: Logging
+              type: object
+              properties:
+                - name: logger_name
+                  displayName: Logger Name
+                - name: level
+                  displayName: Level
+                  values: #restricted values | enum
+                    - info
+                    - debug`;
+
+
 const missingRequiredFieldsComponentYaml = `
 endpoints:
   - displayName: Go Greeter Sample`;
@@ -524,6 +587,64 @@ configurations:
           name: hello-conn
           key: ChoreoAPIKey`;
 
+const validateConfigurationsV2 = `schemaVersion: 1.2
+configuration:
+  env:
+    - name: HELLO_SERVICE_URL
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+    - name: HELLO_SERVICE_API_KEY
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ChoreoAPIKey
+    - name: HELLO_SERVICE_API_KEY
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ConsumerSecret
+    - name: HELLO_SERVICE_CONSUMER_KEY
+      valueFrom: 
+        name: hello-conn
+        key: ConsumerKey
+    - name: HELLO_SERVICE_TOKEN_URL
+      valueFrom: 
+        connectionRef:
+          key: TokenURL
+    - name: CONFIG_GRP_VAR
+      valueFrom: 
+        configGroupRef:
+          name: hello-conn
+    - name: CUSTOM_VAR
+    - name: INVALID VAR
+      value: custom-value
+    - name: FEATURE_FLAG
+      valueFrom:
+        configForm: 
+          displayName: Feature Flag
+          type: boolean
+          required: abc
+    - name: NAME
+      valueFrom:
+        configForm: {}
+    - name: DB_USER
+      valueFrom:
+        configForm:
+          displayName: DB User
+          required: false
+configurations:
+  env:
+    - name: HELLO_SERVICE_URL
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+    - name: HELLO_SERVICE_API_KEY
+      valueFrom: 
+        connectionRef:
+          name: hello-conn
+          key: ChoreoAPIKey`;
+
 module.exports = {
   validComponentYaml,
   missingRequiredFieldsComponentYaml,
@@ -541,4 +662,6 @@ module.exports = {
   validateConfigurations,
   validComponentYamlV1D1,
   validateProjectVisibilityOnlyType,
+  validComponentYamlV1D2,
+  validateConfigurationsV2,
 };
