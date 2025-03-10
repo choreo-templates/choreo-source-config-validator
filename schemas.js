@@ -353,12 +353,6 @@ const configGroupRefSchema = yup.object().shape({
   key: yup.string().required(),
 }).nullable().default(null);
 
-const configFormSchema = yup.object().shape({
-  displayName: yup.string(),
-  required: yup.boolean(),
-  type: yup.string(),
-}).nullable().default(null);
-
 const envVariableSchema = yup.object().shape({
   name: yup.string().required().matches(
     /^[a-zA-Z_][a-zA-Z0-9_]*$/,
@@ -369,13 +363,12 @@ const envVariableSchema = yup.object().shape({
     .shape({
       connectionRef: connectionRefSchema,
       configGroupRef: configGroupRefSchema,
-      configForm: configFormSchema,
     }),
 }).test(
   "oneOfRequired",
   "One of value, connectionRef or configGroupRef must be provided",
   function (envVariable) {
-    return envVariable?.value || envVariable?.valueFrom?.configGroupRef || envVariable?.valueFrom?.connectionRef || envVariable?.valueFrom?.configForm;
+    return envVariable?.value || envVariable?.valueFrom?.configGroupRef || envVariable?.valueFrom?.connectionRef;
   }
 );
 
