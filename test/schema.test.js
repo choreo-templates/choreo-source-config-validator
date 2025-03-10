@@ -390,6 +390,7 @@ test("should validate correctly with valid component.yaml v1.1", async () => {
 });
 test("should fail when configuration is not valid", async () => {
   const expectedErrors = [
+    "configurations.env[0].valueFrom.connectionRef.key is a required field",
     "configuration.env[0].valueFrom.connectionRef.key is a required field",
     "One of value, connectionRef or configGroupRef must be provided",
     "configuration.env[4].valueFrom.connectionRef.name is a required field",

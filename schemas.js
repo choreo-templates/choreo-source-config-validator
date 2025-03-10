@@ -411,6 +411,7 @@ const componentYamlSchemaV1D1 = (srcDir) =>
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D2,
     configuration: configurationSchema,
+    configurations: configurationSchema,
   });
 
 // endpointYamlSchema - Schema for endpoints.yaml
