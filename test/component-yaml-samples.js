@@ -481,7 +481,7 @@ dependencies:
         resourceRef: THIRDPARTY:mySqlDbServer/hotelDb/invalid`;
 
 const validateConfigurations = `schemaVersion: 1.1
-configuration:
+configurations:
   env:
     - name: HELLO_SERVICE_URL
       valueFrom: 

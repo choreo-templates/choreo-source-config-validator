@@ -390,10 +390,10 @@ test("should validate correctly with valid component.yaml v1.1", async () => {
 });
 test("should fail when configuration is not valid", async () => {
   const expectedErrors = [
-    "configuration.env[0].valueFrom.connectionRef.key is a required field",
+    "configurations.env[0].valueFrom.connectionRef.key is a required field",
     "One of value, connectionRef or configGroupRef must be provided",
-    "configuration.env[4].valueFrom.connectionRef.name is a required field",
-    "configuration.env[5].valueFrom.configGroupRef.key is a required field",
+    "configurations.env[4].valueFrom.connectionRef.name is a required field",
+    "configurations.env[5].valueFrom.configGroupRef.key is a required field",
     "One of value, connectionRef or configGroupRef must be provided",
     "Environment variable name must start with a letter or underscore and can only contain letters, numbers, and underscores.",
     "Environment variable names must be unique",

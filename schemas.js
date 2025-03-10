@@ -379,7 +379,7 @@ const envVariableSchema = yup.object().shape({
   }
 );
 
-const configurationSchema = yup.object().shape({
+const configurationsSchema = yup.object().shape({
   env: yup.array().of(envVariableSchema).checkEnvVariableUniqueness(),
 });
 
@@ -410,7 +410,7 @@ const componentYamlSchemaV1D1 = (srcDir) =>
       .oneOf([1.1], "Schema version must be 1.1"),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D2,
-    configuration: configurationSchema,
+    configurations: configurationsSchema,
   });
 
 // endpointYamlSchema - Schema for endpoints.yaml
