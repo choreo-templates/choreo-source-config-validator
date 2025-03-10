@@ -3,6 +3,7 @@ const fs = require("fs");
 const yaml = require("js-yaml");
 const path = require("path");
 const {
+  componentYamlSchemaV1D2,
   componentYamlSchemaV1D1,
   componentYamlSchemaV1D0,
   endpointYamlSchemaV0D1,
@@ -97,6 +98,10 @@ async function validateComponentYaml(sourceRootDir, schemaVersion) {
         abortEarly: false,
       });
       break;
+    case 1.2:
+      await componentYamlSchemaV1D2(sourceRootDir).validate(srcConfigYamlFile, {
+        abortEarly: false,
+      });
     default:
       throw new Error(
         `SchemaVersion must be one of the following values: 1.0, 1.1`
