@@ -353,7 +353,14 @@ const configGroupRefSchema = yup.object().shape({
   key: yup.string().required(),
 }).nullable().default(null);
 
-const envVariableSchema = yup.object().shape({
+const configFormSchema = yup.object().shape({
+  displayName: yup.string(),
+  required: yup.boolean(),
+  type: yup.string(),
+}).nullable().default(null);
+
+// envVariableSchemaV0D1 - Schema for environment variable definition V0.1
+const envVariableSchemaV0D1 = yup.object().shape({
   name: yup.string().required().matches(
     /^[a-zA-Z_][a-zA-Z0-9_]*$/,
     "Environment variable name must start with a letter or underscore and can only contain letters, numbers, and underscores."),
@@ -372,9 +379,37 @@ const envVariableSchema = yup.object().shape({
   }
 );
 
-const configurationSchema = yup.object().shape({
-  env: yup.array().of(envVariableSchema).checkEnvVariableUniqueness(),
+// envVariableSchemaV0D2 - Schema for environment variable definition V0.2
+const envVariableSchemaV0D2 = yup.object().shape({
+  name: yup.string().required().matches(
+    /^[a-zA-Z_][a-zA-Z0-9_]*$/,
+    "Environment variable name must start with a letter or underscore and can only contain letters, numbers, and underscores."),
+  value: yup.string(),
+  valueFrom: yup
+    .object()
+    .shape({
+      connectionRef: connectionRefSchema,
+      configGroupRef: configGroupRefSchema,
+      configForm: configFormSchema,
+    }),
+}).test(
+  "oneOfRequired",
+  "One of value, connectionRef, configGroupRef  or configForm must be provided",
+  function (envVariable) {
+    return envVariable?.value || envVariable?.valueFrom?.configGroupRef || envVariable?.valueFrom?.connectionRef || envVariable?.valueFrom?.configForm ;
+  }
+);
+
+// configurationSchemaV0D1 - Schema for configuration definition V0.1
+const configurationSchemaV0D1 = yup.object().shape({
+  env: yup.array().of(envVariableSchemaV0D1).checkEnvVariableUniqueness(),
 });
+
+// configurationSchemaV1D2 - Schema for configuration definition V1.2
+const configurationSchemaV0D2 = yup.object().shape({
+  env: yup.array().of(envVariableSchemaV0D2).checkEnvVariableUniqueness(),
+});
+
 
 // specSchema - Schema for spec definition
 const specSchema = (srcDir) =>
@@ -403,8 +438,21 @@ const componentYamlSchemaV1D1 = (srcDir) =>
       .oneOf([1.1], "Schema version must be 1.1"),
     endpoints: endpointSchemaV0D2(srcDir),
     dependencies: dependencySchemaV0D2,
-    configuration: configurationSchema,
-    configurations: configurationSchema,
+    configuration: configurationSchemaV0D1,
+    configurations: configurationSchemaV0D1,
+  });
+
+// componentYamlSchemaV1D1 - Schema for component.yaml v1.2
+const componentYamlSchemaV1D2 = (srcDir) =>
+  yup.object().shape({
+    schemaVersion: yup
+      .number()
+      .required()
+      .oneOf([1.1], "Schema version must be 1.2"),
+    endpoints: endpointSchemaV0D2(srcDir),
+    dependencies: dependencySchemaV0D2,
+    configuration: configurationSchemaV0D2,
+    configurations: configurationSchemaV0D2,
   });
 
 // endpointYamlSchema - Schema for endpoints.yaml
@@ -426,6 +474,7 @@ const componentConfigYamlSchemaV1beta1 = (srcDir) =>
   });
 
 module.exports = {
+  componentYamlSchemaV1D2,
   componentYamlSchemaV1D1,
   componentYamlSchemaV1D0,
   endpointYamlSchemaV0D1,
