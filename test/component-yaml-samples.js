@@ -483,7 +483,7 @@ dependencies:
       - name:
         resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
       - name: valid_connection_name
-        resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
+        resourceRef: service:/mttm/mmvhxd/1.1.0/ad088/PUBLIC
       - name: invalid__connection_name
         resourceRef: service:/mttm/mmvhxd/v1.1/ad088/PUBLIC
       - name: valid connection name-v1.1
