@@ -36093,7 +36093,7 @@ const COMPONENT_CONFIG_YAML_API_VERSION = ["core.choreo.dev/v1beta1"];
 const COMPONENT_CONFIG_YAML_KIND = ["ComponentConfig"];
 const PROJECT_ONLY_TYPES = ["GRPC", "TCP", "UDP"];
 const PROJECT_VISIBILITY = "Project";
-const LATEST_COMPONENT_YAML_SCHEMA_VERSION = 1.1;
+const LATEST_COMPONENT_YAML_SCHEMA_VERSION = 1.2;
 
 // custom validators
 // checkEndpointNameUniqueness - Custom validation method to check if endpoint names are unique
