@@ -161,7 +161,7 @@ endpoints:
       basePath: /greeting-service
       port: 9090
     type: REST`;
-  
+
 
 const validateProjectVisibilityOnlyType = `schemaVersion: 1.0
 endpoints:
@@ -541,7 +541,13 @@ dependencies:
       - name: valid_connection_name1
         resourceRef: database:/mySqlDbServer/hotelDb
       - name: valid_connection_name1
-        resourceRef: THIRDPARTY:mySqlDbServer/hotelDb/invalid`;
+        resourceRef: THIRDPARTY:mySqlDbServer/hotelDb/invalid
+      - name: valid_connection_name1
+        resourceRef: storage:myStorageService1
+      - name: invalid_connection_name1
+        resourceRef: storage:myStorageService!
+      - name: valid_connection_name1
+        resourceRef: storage:my-storage.service_2 space`;
 
 const validateConfigurations = `schemaVersion: 1.1
 configuration:

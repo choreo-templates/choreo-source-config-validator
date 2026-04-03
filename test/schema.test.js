@@ -380,6 +380,7 @@ describe("dependencySchemaV0D2 schema tests", () => {
       "dependencies.connectionReferences[19].resourceRef has an invalid service identifier. Use the format database:[<serverName>/]<databaseName> where optional fields are in brackets, allowing only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) after database:.",
       "dependencies.connectionReferences[20].resourceRef has an invalid service identifier. Use the format database:[<serverName>/]<databaseName> where optional fields are in brackets, allowing only alphanumeric characters, underscores (_), hyphens (-), and slashes (/) after database:.",
       "dependencies.connectionReferences[21].resourceRef has an invalid service identifier. For services, use [service:][/<project-handle>/]<component-handle>/<major-version>[/<endpoint-handle>][/<network-visibility>]. For databases, use database:[<serverName>/]<databaseName>. For third-party services, use thirdparty:<service_name>/<version>. Optional fields are specified in brackets.",
+      "dependencies.connectionReferences[23].resourceRef has an invalid service identifier. Use the format storage:<service_name>, allowing only alphanumeric characters, spaces, periods (.), underscores (_), and hyphens (-) after storage:.",
     ];
     await expectValidationErrors(
       COMPONENT_YAML,
