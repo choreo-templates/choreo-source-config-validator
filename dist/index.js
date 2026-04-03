@@ -36256,6 +36256,10 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
       const dbSvcRefNameRegex = new RegExp(
         "^database:(([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)$"
       );
+      const storageSvcRefNameRegex = new RegExp(
+        "^storage:([a-zA-Z0-9\\s_.-]+)$"
+      );
+
       if (value.startsWith("service:")) {
         return (
           svcRefNameRegex.test(value) ||
@@ -36285,6 +36289,17 @@ yup.addMethod(yup.string, "validateResourceRef", function () {
           )
         );
       }
+      if (value.startsWith("storage:")) {
+        return (
+          storageSvcRefNameRegex.test(value) ||
+          new yup.ValidationError(
+            `${testCtx.path} has an invalid service identifier. ` +
+            `Use the format storage:<service_name>, ` +
+            `allowing only alphanumeric characters, spaces, periods (.), underscores (_), and hyphens (-) after storage:.`
+          )
+        );
+      }
+
       return (
         // since "service:" is optional, we need to validate again with a generic error
         svcRefNameRegex.test(value) ||
